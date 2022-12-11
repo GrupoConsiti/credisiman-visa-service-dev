@@ -73,7 +73,9 @@ public class ConsultaDatosCliente {
 			log.error("SQL ERROR, " + e.getMessage());
 			log.info("obtenerDatosCliente response = [" + message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse) + "]");
 			return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);
-		} catch (Exception ex) {
+		} catch (NullPointerException nul) {
+			return message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse);
+		}catch (Exception ex) {
 			log.error("SERVICE ERROR, " + ex.getMessage());
 			log.info("obtenerDatosCliente response = [" + message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse) + "]");
 			return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);
