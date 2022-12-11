@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Main-Class: 
+Class-Path: xmlbeans-2.5.0.jar commons-codec-1.9.jar httpcore-nio-4.4.4.
+ jar json-20160212.jar httpclient-4.5.2.jar httpcore-4.4.4.jar httpmime-
+ 4.5.2.jar httpasyncclient-4.1.1.jar stax-api-1.0.1.jar jackson-databind
+ -2.14.0-rc1.jar unirest-java-1.4.9.jar commons-logging-1.2.jar jackson-
+ annotations-2.14.0-rc1.jar jackson-core-2.14.0-rc1.jar
+
