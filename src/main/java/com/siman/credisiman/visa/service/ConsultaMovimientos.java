@@ -242,6 +242,7 @@ public class ConsultaMovimientos {
             movimientosResponse.setDescripcionComercio(rs.getString("comercio"));
             listaMovimientos.add(movimientosResponse);
         }
+        conexion.close();
         response1.setMovimientos(listaMovimientos);
         return response1;
     }

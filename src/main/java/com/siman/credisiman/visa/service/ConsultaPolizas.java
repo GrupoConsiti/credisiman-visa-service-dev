@@ -141,6 +141,7 @@ public class ConsultaPolizas {
             consultaPolizas.setEstadoPoliza(rs.getString("estadoPoliza"));
             lista.add(consultaPolizas);
         }
+        conexion.close();
         response.setListaDePolizas(lista);
         return response;
     }

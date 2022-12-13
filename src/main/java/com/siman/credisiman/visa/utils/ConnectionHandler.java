@@ -19,18 +19,12 @@ public class ConnectionHandler {
     public Connection getConnection(String jndi) {
         Connection connection = null;
 
-        // unicamente para prueba
-        Hashtable props = new Hashtable();
-        props.put(Context.INITIAL_CONTEXT_FACTORY, "weblogic.jndi.WLInitialContextFactory");
-        //   props.put(Context.PROVIDER_URL, "t3://localhost:7001");
-
         try {
-            InitialContext context = new InitialContext(props);
+            InitialContext context = new InitialContext();
             DataSource dataSource = (DataSource) context.lookup(jndi);
             connection = dataSource.getConnection();
-            log.info("conexion status: " + connection.isValid(5));
         } catch (NamingException | SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("SQL CONEXION ERROR");
         }
         return connection;
     }
