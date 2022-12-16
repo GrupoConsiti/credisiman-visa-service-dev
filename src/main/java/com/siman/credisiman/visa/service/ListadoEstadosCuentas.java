@@ -11,7 +11,7 @@ public class ListadoEstadosCuentas {
     private static Logger log = LoggerFactory.getLogger(ListadoEstadosCuentas.class);
 
 	public static XmlObject obtenerListadoEstadosCuenta(String pais, String numeroTarjeta, String remoteJndiSunnel,
-			String remoteJndiOrion, String siscardUrl, String siscardUser, String binCredisiman, String tipoTarjeta) {
+			String remoteJndiOrion, String siscardUrl, String siscardUser, String binCredisiman, String tipoTarjeta, String urlCrm) {
         String namespace = "http://siman.com/ListadoEstadosCuenta";
         String operationResponse = "ObtenerListadoEstadosCuentaResponse";
         String[] listadoFechaCorte = {"20220711", "20220712", "20220713"};
