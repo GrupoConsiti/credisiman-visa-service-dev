@@ -95,4 +95,11 @@ public class Utils {
     public boolean validateLongitude(String s, Integer longitude) {
         return s.length() <= longitude;
     }
+
+    public static String obtenerTarjeta(String s, int n) {
+        if (s == null || n > s.length()) {
+            return s;
+        }
+        return s.substring(s.length() - n);
+    }
 }
