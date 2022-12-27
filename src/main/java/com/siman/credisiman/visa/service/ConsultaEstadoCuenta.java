@@ -47,6 +47,9 @@ public class ConsultaEstadoCuenta {
         if (utils.validateNotNull(fechaCorte) || utils.validateNotEmpty(fechaCorte)) {
             return message.genericMessage("ERROR", "400", "El campo fecha de corte es obligatorio", namespace, operationResponse);
         }
+        if (utils.validateNotNull(identificacion) || utils.validateNotEmpty(identificacion)) {
+            return message.genericMessage("ERROR", "400", "El campo identificacion es obligatorio", namespace, operationResponse);
+        }
 
 
         try {

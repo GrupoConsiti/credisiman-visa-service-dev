@@ -18,7 +18,7 @@ import java.util.ArrayList;
 public class ListadoEstadosCuentas {
     private static final Logger log = LoggerFactory.getLogger(ListadoEstadosCuentas.class);
     private static final String namespace = "http://siman.com/ListadoEstadosCuenta";
-    private static final String operationResponse = "ListadoEstadosCuentaResponse";
+    private static final String operationResponse = "ObtenerListadoEstadosCuentaResponse";
 
     public static XmlObject obtenerListadoEstadosCuenta(String pais, String numeroTarjeta, String remoteJndiSunnel,
                                                         String remoteJndiOrion, String siscardUrl, String siscardUser,
