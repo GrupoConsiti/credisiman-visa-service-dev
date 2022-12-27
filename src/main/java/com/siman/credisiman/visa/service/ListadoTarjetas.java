@@ -208,7 +208,7 @@ public class ListadoTarjetas {
                 "       INNER JOIN SUNNELP3.t_gcreditline cl " +
                 "          ON cl.creditlineid = a.accountid " +
                 "       INNER JOIN SUNNELP3.t_gcreditlinepartition clp " +
-                "          ON cl.creditlineid = clp.creditlineid " +
+                "          ON cl.creditlineid = clp.creditlineid AND clp.creditlinepartitiontypeid = 355 " +
                 "       LEFT OUTER JOIN (  SELECT clt.creditlineid, " +
                 "                                 MAX (bpt.paymentdate) AS fechaPago " +
                 "                            FROM    SUNNELP3.t_gbillingperiod bpt " +
@@ -241,7 +241,8 @@ public class ListadoTarjetas {
                 "                                    + fbt.contingentinterest) " +
                 "                                    AS pagoMinimo, " +
                 "                                 SUM ( " +
-                "                                      fbt.periodamountdue " +
+                "                                      fbt.regularbalance  " +
+                "                                    + fbt.periodamountdue " +
                 "                                    + fbt.regularinterest " +
                 "                                    + fbt.regularinteresttax " +
                 "                                    + fbt.overduebalance " +

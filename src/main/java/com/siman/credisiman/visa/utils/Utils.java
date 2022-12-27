@@ -1,5 +1,9 @@
 package com.siman.credisiman.visa.utils;
 
+import org.apache.commons.codec.binary.Base64;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -85,6 +89,15 @@ public class Utils {
 
     public boolean validatePositiveAmount(Double amount) {
         return amount > 0.0;
+    }
+
+    public static String blob_to_base64(InputStream blob, int longitud) throws IOException {
+        InputStream finput = blob;
+        byte[] imageBytes = new byte[(int)longitud];
+        finput.read(imageBytes, 0, imageBytes.length);
+        finput.close();
+        String pdf_final = Base64.encodeBase64String(imageBytes);
+        return pdf_final;
     }
 
     public boolean validateAmountPresicion(Double amount, int presicion) {
