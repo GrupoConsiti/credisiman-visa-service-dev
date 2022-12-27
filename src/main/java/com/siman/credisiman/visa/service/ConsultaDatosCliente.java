@@ -52,7 +52,7 @@ public class ConsultaDatosCliente {
 		ConsultaDatosClienteResponse response3;
 		try {
 			//DATOS TARJETA PRIVADA
-			response2 = tarjetaPrivada(identificacion, remoteJndiSunnel);
+			response2 = tarjetaPrivada(identificacion, remoteJndiSunnel, pais);
 			if (response2 != null) {
 				log.info("DATOS TARJETA PRIVADA");
 				return estructura(response2);
@@ -144,8 +144,8 @@ public class ConsultaDatosCliente {
 	}
 
 	//OBTENER DATOS TARJETA PRIVADA
-	public static ConsultaDatosClienteResponse tarjetaPrivada(String identifier, String remoteJndiSunnel) throws Exception {
-		String QUERY = "SELECT " +
+	public static ConsultaDatosClienteResponse tarjetaPrivada(String identifier, String remoteJndiSunnel, String pais) throws Exception {
+		String QUERY1 = "SELECT " +
 				"    c.customerid AS niu," +
 				"    substr(pc.firstname, 1, instr(pc.firstname, ' ') - 1) as primerNombre, " +
 				"    substr(pc.firstname, instr(pc.firstname,' ') + 1)    as segundoNombre, " +
@@ -185,10 +185,144 @@ public class ConsultaDatosCliente {
 				"        INNER JOIN SUNNELP3.t_gpersoncustomer pc ON pc.customerid = c.customerid " +
 				"WHERE c.identificationnumber = ? ";
 
+		String query2 = " SELECT               " +
+				"                    c.customerid AS niu, + " +
+				"                    substr(pc.firstname, 1, instr(pc.firstname, ' ') - 1) as primerNombre, " +
+				"                    substr(pc.firstname, instr(pc.firstname,' ') + 1)    as segundoNombre, " +
+				"                    pc.lastname1 AS primerApellido, " +
+				"                    pc.lastname2 AS segundoApellido, " +
+				"                    pc.marriedname AS apellidoCasada, " +
+				"                    TO_CHAR(pc.birthdate,'YYYYMMDD') AS fechaNacimiento, " +
+				"                    c.identificationtypeid AS tipoIdentificacion, " +
+				"                    c.identificationnumber AS numeroIdentificacion, " +
+				"                    NVL((  " +
+				"                            SELECT LOWER(ea.email) " +
+				"                            FROM SUNNELGTP4.T_GEMAILADDRESS ea " +
+				"                            WHERE ea.customerid = c.customerid AND ea.addressid = (SELECT MAX(eat.addressid) FROM SUNNELGTP4.t_gemailaddress eat WHERE eat.customerid = ea.customerid AND eat.enabledind = 'T') " +
+				"                        ), ' ') AS correo, " +
+				"                    NVL((  " +
+				"                            SELECT p.phonenumber " +
+				"                            FROM SUNNELGTP4.t_gphone p " +
+				"                            WHERE p.customerid =  c.customerid AND p.phoneid = (SELECT MAX(pt.phoneid) FROM SUNNELGTP4.t_gphone pt WHERE pt.customerid = p.customerid AND pt.phonetype = 'MOBILE' AND pt.enabledind = 'T' AND pt.phonenumber <> '.') " +
+				"                        ), ' ') AS celular, " +
+				"                    ' ' AS lugarTrabajo, " +
+				"                    NVL((  " +
+				"                            SELECT ba.address || NVL(', '|| c.name, ' ') || NVL(', '|| s.name, ' ') " +
+				"                            FROM SUNNELGTP4.t_gbuildingaddress ba " +
+				"                                     INNER JOIN SUNNELGTP4.t_gcity c ON c.cityid = ba.cityid AND c.countryid = ba.countryid AND c.stateid = ba.stateid " +
+				"                                     INNER JOIN SUNNELGTP4.t_gstate s ON s.stateid = ba.stateid AND s.countryid = ba.countryid AND ba.addressid = (SELECT MAX (addressid) FROM T_Gbuildingaddress bat WHERE bat.addresstype = 'HOME' AND bat.customerid = ba.customerid) " +
+				"                            WHERE ba.customerid = c.customerid " +
+				"                        ), ' ') AS direccion, " +
+				"                    NVL((  " +
+				"                            SELECT ba.address || NVL(', '|| c.name, ' ') || NVL(', '|| s.name, ' ') " +
+				"                            FROM SUNNELGTP4.t_gbuildingaddress ba " +
+				"                                     INNER JOIN SUNNELGTP4.t_gcity c ON c.cityid = ba.cityid AND c.countryid = ba.countryid AND c.stateid = ba.stateid " +
+				"                                     INNER JOIN SUNNELGTP4.t_gstate s ON s.stateid = ba.stateid AND s.countryid = ba.countryid AND ba.addressid = (SELECT MAX (addressid) FROM T_Gbuildingaddress bat WHERE bat.addresstype = 'BUSINESS' AND bat.customerid = ba.customerid) " +
+				"                            WHERE ba.customerid = c.customerid " +
+				"                        ), ' ') AS direccionTrabajo " +
+				"                FROM " +
+				"                    SUNNELGTP4.t_gcustomer c " +
+				"                        INNER JOIN SUNNELGTP4.t_gpersoncustomer pc ON pc.customerid = c.customerid " +
+				"                        WHERE c.identificationnumber = ? ";
+		String query3 = " SELECT               " +
+				"                    c.customerid AS niu, + " +
+				"                    substr(pc.firstname, 1, instr(pc.firstname, ' ') - 1) as primerNombre, " +
+				"                    substr(pc.firstname, instr(pc.firstname,' ') + 1)    as segundoNombre, " +
+				"                    pc.lastname1 AS primerApellido, " +
+				"                    pc.lastname2 AS segundoApellido, " +
+				"                    pc.marriedname AS apellidoCasada, " +
+				"                    TO_CHAR(pc.birthdate,'YYYYMMDD') AS fechaNacimiento, " +
+				"                    c.identificationtypeid AS tipoIdentificacion, " +
+				"                    c.identificationnumber AS numeroIdentificacion, " +
+				"                    NVL((  " +
+				"                            SELECT LOWER(ea.email) " +
+				"                            FROM SUNNELNIP1.T_GEMAILADDRESS ea " +
+				"                            WHERE ea.customerid = c.customerid AND ea.addressid = (SELECT MAX(eat.addressid) FROM SUNNELNIP1.t_gemailaddress eat WHERE eat.customerid = ea.customerid AND eat.enabledind = 'T') " +
+				"                        ), ' ') AS correo, " +
+				"                    NVL((  " +
+				"                            SELECT p.phonenumber " +
+				"                            FROM SUNNELNIP1.t_gphone p " +
+				"                            WHERE p.customerid =  c.customerid AND p.phoneid = (SELECT MAX(pt.phoneid) FROM SUNNELNIP1.t_gphone pt WHERE pt.customerid = p.customerid AND pt.phonetype = 'MOBILE' AND pt.enabledind = 'T' AND pt.phonenumber <> '.') " +
+				"                        ), ' ') AS celular, " +
+				"                    ' ' AS lugarTrabajo, " +
+				"                    NVL((  " +
+				"                            SELECT ba.address || NVL(', '|| c.name, ' ') || NVL(', '|| s.name, ' ') " +
+				"                            FROM SUNNELNIP1.t_gbuildingaddress ba " +
+				"                                     INNER JOIN SUNNELNIP1.t_gcity c ON c.cityid = ba.cityid AND c.countryid = ba.countryid AND c.stateid = ba.stateid " +
+				"                                     INNER JOIN SUNNELNIP1.t_gstate s ON s.stateid = ba.stateid AND s.countryid = ba.countryid AND ba.addressid = (SELECT MAX (addressid) FROM T_Gbuildingaddress bat WHERE bat.addresstype = 'HOME' AND bat.customerid = ba.customerid) " +
+				"                            WHERE ba.customerid = c.customerid " +
+				"                        ), ' ') AS direccion, " +
+				"                    NVL((  " +
+				"                            SELECT ba.address || NVL(', '|| c.name, ' ') || NVL(', '|| s.name, ' ') " +
+				"                            FROM SUNNELNIP1.t_gbuildingaddress ba " +
+				"                                     INNER JOIN SUNNELNIP1.t_gcity c ON c.cityid = ba.cityid AND c.countryid = ba.countryid AND c.stateid = ba.stateid " +
+				"                                     INNER JOIN SUNNELNIP1.t_gstate s ON s.stateid = ba.stateid AND s.countryid = ba.countryid AND ba.addressid = (SELECT MAX (addressid) FROM T_Gbuildingaddress bat WHERE bat.addresstype = 'BUSINESS' AND bat.customerid = ba.customerid) " +
+				"                            WHERE ba.customerid = c.customerid " +
+				"                        ), ' ') AS direccionTrabajo " +
+				"                FROM " +
+				"                    SUNNELNIP1.t_gcustomer c " +
+				"                        INNER JOIN SUNNELNIP1.t_gpersoncustomer pc ON pc.customerid = c.customerid " +
+				"                        WHERE c.identificationnumber = ? ";
+
+		String query4 = " SELECT               " +
+				"                    c.customerid AS niu, + " +
+				"                    substr(pc.firstname, 1, instr(pc.firstname, ' ') - 1) as primerNombre, " +
+				"                    substr(pc.firstname, instr(pc.firstname,' ') + 1)    as segundoNombre, " +
+				"                    pc.lastname1 AS primerApellido, " +
+				"                    pc.lastname2 AS segundoApellido, " +
+				"                    pc.marriedname AS apellidoCasada, " +
+				"                    TO_CHAR(pc.birthdate,'YYYYMMDD') AS fechaNacimiento, " +
+				"                    c.identificationtypeid AS tipoIdentificacion, " +
+				"                    c.identificationnumber AS numeroIdentificacion, " +
+				"                    NVL((  " +
+				"                            SELECT LOWER(ea.email) " +
+				"                            FROM  SUNNELCRP4.T_GEMAILADDRESS ea " +
+				"                            WHERE ea.customerid = c.customerid AND ea.addressid = (SELECT MAX(eat.addressid) FROM  SUNNELCRP4.t_gemailaddress eat WHERE eat.customerid = ea.customerid AND eat.enabledind = 'T') " +
+				"                        ), ' ') AS correo, " +
+				"                    NVL((  " +
+				"                            SELECT p.phonenumber " +
+				"                            FROM  SUNNELCRP4.t_gphone p " +
+				"                            WHERE p.customerid =  c.customerid AND p.phoneid = (SELECT MAX(pt.phoneid) FROM  SUNNELCRP4.t_gphone pt WHERE pt.customerid = p.customerid AND pt.phonetype = 'MOBILE' AND pt.enabledind = 'T' AND pt.phonenumber <> '.') " +
+				"                        ), ' ') AS celular, " +
+				"                    ' ' AS lugarTrabajo, " +
+				"                    NVL((  " +
+				"                            SELECT ba.address || NVL(', '|| c.name, ' ') || NVL(', '|| s.name, ' ') " +
+				"                            FROM  SUNNELCRP4.t_gbuildingaddress ba " +
+				"                                     INNER JOIN  SUNNELCRP4.t_gcity c ON c.cityid = ba.cityid AND c.countryid = ba.countryid AND c.stateid = ba.stateid " +
+				"                                     INNER JOIN  SUNNELCRP4.t_gstate s ON s.stateid = ba.stateid AND s.countryid = ba.countryid AND ba.addressid = (SELECT MAX (addressid) FROM T_Gbuildingaddress bat WHERE bat.addresstype = 'HOME' AND bat.customerid = ba.customerid) " +
+				"                            WHERE ba.customerid = c.customerid " +
+				"                        ), ' ') AS direccion, " +
+				"                    NVL((  " +
+				"                            SELECT ba.address || NVL(', '|| c.name, ' ') || NVL(', '|| s.name, ' ') " +
+				"                            FROM  SUNNELCRP4.t_gbuildingaddress ba " +
+				"                                     INNER JOIN  SUNNELCRP4.t_gcity c ON c.cityid = ba.cityid AND c.countryid = ba.countryid AND c.stateid = ba.stateid " +
+				"                                     INNER JOIN  SUNNELCRP4.t_gstate s ON s.stateid = ba.stateid AND s.countryid = ba.countryid AND ba.addressid = (SELECT MAX (addressid) FROM T_Gbuildingaddress bat WHERE bat.addresstype = 'BUSINESS' AND bat.customerid = ba.customerid) " +
+				"                            WHERE ba.customerid = c.customerid " +
+				"                        ), ' ') AS direccionTrabajo " +
+				"                FROM " +
+				"                     SUNNELCRP4.t_gcustomer c " +
+				"                        INNER JOIN SUNNELCRP4.t_gpersoncustomer pc ON pc.customerid = c.customerid " +
+				"                        WHERE c.identificationnumber = ?";
 		ConsultaDatosClienteResponse response1 = new ConsultaDatosClienteResponse();
 		//instancia de conexion
 		Connection conexion = new ConnectionHandler().getConnection(remoteJndiSunnel);
-		PreparedStatement sentencia = conexion.prepareStatement(QUERY);
+
+
+		PreparedStatement sentencia = null;
+		switch (pais){
+			case "SV":
+				sentencia = conexion.prepareStatement(QUERY1);
+				break;
+			case "GT":
+				sentencia = conexion.prepareStatement(query2);
+				break;
+			case "NI":
+				sentencia = conexion.prepareStatement(query3);
+				break;
+			case "CR":
+				sentencia = conexion.prepareStatement(query4);
+				break;
+		}
 
 		sentencia.setString(1, identifier);
 		ResultSet rs = sentencia.executeQuery();
