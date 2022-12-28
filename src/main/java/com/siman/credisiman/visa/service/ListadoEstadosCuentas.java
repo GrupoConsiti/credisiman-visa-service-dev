@@ -167,25 +167,25 @@ public class ListadoEstadosCuentas {
 
 //EL SALVADOR
         String query1 = "SELECT  " +
-                "TO_DATE(iefp.date_file, 'YYYY/MM/DD') AS fechaCorte " +
+                "TO_DATE(iefp.date_file, 'YYYYMMDD') AS fechaCorte " +
                 "FROM ESTCTASV.t_isim_estcta_files_pdf iefp " +
                 "WHERE iefp.idcard = ? AND iefp.customerid = ? " +
                 "ORDER BY iefp.date_file DESC ";
 //GUATEMALA
         String query2 = "SELECT  " +
-                "TO_DATE(iefp.date_file, 'YYYY/MM/DD') AS fechaCorte " +
+                "TO_DATE(iefp.date_file, 'YYYYMMDD') AS fechaCorte " +
                 "FROM ESTCTAGT.t_isim_estcta_files_pdf iefp " +
                 "WHERE iefp.idcard = ? AND iefp.customerid = ? " +
                 "ORDER BY iefp.date_file DESC ";
 //NICARAGUA
         String query3 = "SELECT  " +
-                "TO_DATE(iefp.date_file, 'YYYY/MM/DD') AS fechaCorte " +
+                "TO_DATE(iefp.date_file, 'YYYYMMDD') AS fechaCorte " +
                 "FROM ESTCTANI.t_isim_estcta_files_pdf iefp " +
                 "WHERE iefp.idcard = ? AND iefp.customerid = ? " +
                 "ORDER BY iefp.date_file DESC ";
 //COSTA RICA
         String query4 = "SELECT  " +
-                "TO_DATE(iefp.date_file, 'YYYY/MM/DD') AS fechaCorte " +
+                "TO_DATE(iefp.date_file, 'YYYYMMDD') AS fechaCorte " +
                 "FROM ESTCTACR.t_isim_estcta_files_pdf iefp " +
                 "WHERE iefp.idcard = ? AND iefp.customerid = ? " +
                 "ORDER BY iefp.date_file DESC ";
