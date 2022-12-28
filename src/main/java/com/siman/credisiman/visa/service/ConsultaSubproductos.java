@@ -24,18 +24,18 @@ public class ConsultaSubproductos {
 
         //validar campos requeridos
         if (utils.validateNotNull(pais)|| utils.validateNotEmpty(pais)) {
-            return message.genericMessage("ERROR", "025", "El campo pais es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo pais es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(numeroTarjeta)|| utils.validateNotEmpty(numeroTarjeta)) {
-            return message.genericMessage("ERROR", "025", "El campo número tarjeta es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo número tarjeta es obligatorio", namespace, operationResponse);
         }
 
         //validar longitudes
         if (!utils.validateLongitude(pais,3)) {
-            return message.genericMessage("ERROR", "025", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
         }
         if (!utils.validateLongitude(numeroTarjeta  ,16)) {
-            return message.genericMessage("ERROR", "025", "La longitud del campo número tarjeta debe ser menor o igual a 16", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "La longitud del campo número tarjeta debe ser menor o igual a 16", namespace, operationResponse);
         }
 
         XmlObject result = XmlObject.Factory.newInstance();

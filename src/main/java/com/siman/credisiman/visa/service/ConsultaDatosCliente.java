@@ -30,21 +30,21 @@ public class ConsultaDatosCliente {
 
 		if (utils.validateNotNull(pais) || utils.validateNotEmpty(pais)) {
 			log.info("pais required");
-			return message.genericMessage("ERROR", "025", "El campo pais es obligatorio", namespace, operationResponse);
+			return message.genericMessage("ERROR", "400", "El campo pais es obligatorio", namespace, operationResponse);
 		}
 		if (utils.validateNotNull(identificacion) || utils.validateNotEmpty(identificacion)) {
 			log.info("identificacion required");
-			return message.genericMessage("ERROR", "025", "El campo identificación es obligatorio", namespace, operationResponse);
+			return message.genericMessage("ERROR", "400", "El campo identificación es obligatorio", namespace, operationResponse);
 		}
 
 		//validar longitudes
 		if (!utils.validateLongitude(pais, 3)) {
 			log.info("pais, size overload");
-			return message.genericMessage("ERROR", "025", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
+			return message.genericMessage("ERROR", "400", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
 		}
 		if (!utils.validateLongitude(identificacion, 19)) {
 			log.info("identificacion, size overload");
-			return message.genericMessage("ERROR", "025", "La longitud del campo identificacion debe ser menor o igual a 19", namespace, operationResponse);
+			return message.genericMessage("ERROR", "400", "La longitud del campo identificacion debe ser menor o igual a 19", namespace, operationResponse);
 		}
 
 

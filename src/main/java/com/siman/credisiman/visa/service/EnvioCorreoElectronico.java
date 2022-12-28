@@ -35,19 +35,19 @@ public class EnvioCorreoElectronico {
 
         if (utils.validateNotNull(correoOrigen) || utils.validateNotEmpty(correoOrigen)) {
             log.info("correo origen required");
-            return message.genericMessage("ERROR", "025", "El campo correo origen es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo correo origen es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(nombreOrigen) || utils.validateNotEmpty(nombreOrigen)) {
             log.info("nombre origen required");
-            return message.genericMessage("ERROR", "025", "El campo nombre origen es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo nombre origen es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(asunto) || utils.validateNotEmpty(asunto)) {
             log.info("asunto required");
-            return message.genericMessage("ERROR", "025", "El campo asunto es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo asunto es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(html) || utils.validateNotEmpty(html)) {
             log.info("html required");
-            return message.genericMessage("ERROR", "025", "El campo html es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo html es obligatorio", namespace, operationResponse);
         }
 
         try {
