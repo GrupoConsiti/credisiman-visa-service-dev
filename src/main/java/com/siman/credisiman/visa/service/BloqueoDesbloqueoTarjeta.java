@@ -33,29 +33,29 @@ public class BloqueoDesbloqueoTarjeta {
 
         if (utils.validateNotNull(pais) || utils.validateNotEmpty(pais)) {
             log.info("pais required");
-            return message.genericMessage("ERROR", "025", "El campo pais es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo pais es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(numeroTarjeta) || utils.validateNotEmpty(numeroTarjeta)) {
             log.info("numero tarjeta required");
-            return message.genericMessage("ERROR", "025", "El campo número tarjeta es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo número tarjeta es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(motivo) || utils.validateNotEmpty(motivo)) {
             log.info("motivo required");
-            return message.genericMessage("ERROR", "025", "El campo motivo es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo motivo es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(estadoDeseado) || utils.validateNotEmpty(estadoDeseado)) {
             log.info("estado deseado required");
-            return message.genericMessage("ERROR", "025", "El campo estado deseado es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo estado deseado es obligatorio", namespace, operationResponse);
         }
 
         //validar longitudes
         if (!utils.validateLongitude(pais, 3)) {
             log.info("pais, size overload");
-            return message.genericMessage("ERROR", "025", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
         }
         if (!utils.validateLongitude(numeroTarjeta, 16)) {
             log.info("identificacion, size overload");
-            return message.genericMessage("ERROR", "025",
+            return message.genericMessage("ERROR", "400",
                     "La longitud del campo número tarjeta debe ser menor o igual a 16", namespace, operationResponse);
         }
 
@@ -103,6 +103,10 @@ public class BloqueoDesbloqueoTarjeta {
 //        DESBLOQUEO TEMPORAL (estadoDeseado 0)
         String query3 = "UPDATE SUNNELP3.t_gcard SET riskconditionind = 'F', riskconditiondate = null, " +
                 "riskcondreasoncodeid = null WHERE cardid = ? AND riskcondreasoncodeid = 1";
+
+//        query's el salvador
+
+
 
         ConnectionHandler connectionHandler = new ConnectionHandler();
         Connection conexion = connectionHandler.getConnection(remoteJndiSunnel);

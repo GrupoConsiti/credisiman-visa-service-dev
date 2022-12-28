@@ -36,21 +36,25 @@ public class ConsultaPolizas {
 
         if (utils.validateNotNull(pais) || utils.validateNotEmpty(pais)) {
             log.info("pais required");
-            return message.genericMessage("ERROR", "025", "El campo pais es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo pais es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(numeroTarjeta) || utils.validateNotEmpty(numeroTarjeta)) {
             log.info("numero tarjeta required");
-            return message.genericMessage("ERROR", "025", "El campo número tarjeta es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo número tarjeta es obligatorio", namespace, operationResponse);
+        }
+        if (utils.validateNotNull(tipoTarjeta) || utils.validateNotEmpty(tipoTarjeta)) {
+            log.info("tipoTarjeta required");
+            return message.genericMessage("ERROR", "400", "El campo número tipoTarjeta es obligatorio", namespace, operationResponse);
         }
 
         //validar longitudes
         if (!utils.validateLongitude(pais, 3)) {
             log.info("pais, size overload");
-            return message.genericMessage("ERROR", "025", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
         }
         if (!utils.validateLongitude(numeroTarjeta, 16)) {
             log.info("identificacion, size overload");
-            return message.genericMessage("ERROR", "025",
+            return message.genericMessage("ERROR", "400",
                     "La longitud del campo número tarjeta debe ser menor o igual a 16", namespace, operationResponse);
         }
 
@@ -59,7 +63,7 @@ public class ConsultaPolizas {
             switch (tipoTarjeta) {
                 case "P":
                     //datos tarjeta privada
-                    response1 = obtenerDatosArca(remoteJndiSunnel, numeroTarjeta);
+                    response1 = obtenerDatosArca(remoteJndiSunnel, numeroTarjeta, pais);
                     if (response1.getListaDePolizas().size()>0  &&response1 != null) {
                         return estructura(response1);
                     } else {
@@ -81,8 +85,8 @@ public class ConsultaPolizas {
             log.info("obtenerConsultaPolizas response = [" + message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse) + "]");
             return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);
         } catch (NullPointerException nul) {
-         return message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse);
-         } catch (Exception ex) {
+            return message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse);
+        } catch (Exception ex) {
             ex.printStackTrace();
             log.error("SERVICE ERROR, " + ex.getMessage());
             log.info("obtenerConsultaPolizas response = [" + message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse) + "]");
@@ -118,22 +122,64 @@ public class ConsultaPolizas {
         return result;
     }
 
-    public static ConsultaPolizasResponse obtenerDatosArca(String remoteJndiSunnel, String numeroTarjeta) throws Exception {
-        String query = "SELECT A.CARDID, " +
+    public static ConsultaPolizasResponse obtenerDatosArca(String remoteJndiSunnel, String numeroTarjeta, String pais) throws Exception {
+        String query1 = "SELECT A.CARDID, " +
                 "                       AT.AUTOMATEDCHARGETYPEID tipoPoliza, " +
                 "                AT.DESCRIPTION nombrePoliza, A.STATUS estadoPoliza  " +
-                "                  FROM SUNNEL.T_GAUTOMATEDCHARGE a, SUNNEL.T_GAUTOMATEDCHARGETYPE at " +
+                "                  FROM SUNNELP3.T_GAUTOMATEDCHARGE a, SUNNELP3.T_GAUTOMATEDCHARGETYPE at " +
                 "                 WHERE A.AUTOMATEDCHARGETYPEID = AT.AUTOMATEDCHARGETYPEID " +
                 "                AND A.CARDID = ? ";
 
+        String query2 = " SELECT A.CARDID, " +
+                "       AT.AUTOMATEDCHARGETYPEID tipoPoliza, " +
+                "       AT.DESCRIPTION nombrePoliza, " +
+                "       A.STATUS estadoPoliza " +
+                "  FROM SUNNELGTP4.T_GAUTOMATEDCHARGE a, SUNNELGTP4.T_GAUTOMATEDCHARGETYPE at " +
+                " WHERE     A.AUTOMATEDCHARGETYPEID = AT.AUTOMATEDCHARGETYPEID " +
+                "       AND A.CARDID = ? ";
+
+        String query3 = " SELECT A.CARDID, " +
+                "       AT.AUTOMATEDCHARGETYPEID tipoPoliza, " +
+                "       AT.DESCRIPTION nombrePoliza, " +
+                "       A.STATUS estadoPoliza " +
+                "  FROM SUNNELNIP1.T_GAUTOMATEDCHARGE a, SUNNELNIP1.T_GAUTOMATEDCHARGETYPE at " +
+                " WHERE     A.AUTOMATEDCHARGETYPEID = AT.AUTOMATEDCHARGETYPEID " +
+                "       AND A.CARDID = ? ";
+
+        String query4 = " SELECT A.CARDID, " +
+                "       AT.AUTOMATEDCHARGETYPEID tipoPoliza, " +
+                "       AT.DESCRIPTION nombrePoliza, " +
+                "       A.STATUS estadoPoliza " +
+                "  FROM SUNNELCRP4.T_GAUTOMATEDCHARGE a, SUNNELCRP4.T_GAUTOMATEDCHARGETYPE at " +
+                " WHERE     A.AUTOMATEDCHARGETYPEID = AT.AUTOMATEDCHARGETYPEID " +
+                "       AND A.CARDID = ? ";
+
         ConnectionHandler connectionHandler = new ConnectionHandler();
         Connection conexion = connectionHandler.getConnection(remoteJndiSunnel);
-        PreparedStatement sentencia = conexion.prepareStatement(query);
+
+        PreparedStatement sentencia = null;
+        switch (pais){
+            case "SV":
+                sentencia = conexion.prepareStatement(query1);
+                break;
+            case "GT":
+                sentencia = conexion.prepareStatement(query2);
+                break;
+            case "NI":
+                sentencia = conexion.prepareStatement(query3);
+                break;
+            case "CR":
+                sentencia = conexion.prepareStatement(query4);
+                break;
+        }
+
         //parametros
         sentencia.setString(1, numeroTarjeta);
         ResultSet rs = sentencia.executeQuery();
         List<ListaDePolizasResponse> lista = new ArrayList<>();
         ConsultaPolizasResponse response = new ConsultaPolizasResponse();
+
+
         while (rs.next()) {
             ListaDePolizasResponse consultaPolizas = new ListaDePolizasResponse();
             consultaPolizas.setTipoPoliza(rs.getString("tipoPoliza"));

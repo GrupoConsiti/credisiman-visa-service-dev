@@ -28,28 +28,34 @@ public class ConsultaMovimientos {
     private static final String operationResponse = "ObtenerConsultaMovimientosResponse";
 
     public static XmlObject obtenerConsultaMovimientos(String pais, String numeroTarjeta, String fechaInicial,
-                                                       String fechaFinal, String remoteJndiSunnel, String remoteJndiOrion, String siscardUrl, String siscardUser, String binCredisiman, String tipoTarjeta) {
+                                                       String fechaFinal, String remoteJndiSunnel, String remoteJndiOrion,
+                                                       String siscardUrl, String siscardUser, String binCredisiman,
+                                                       String tipoTarjeta) {
         //validar campos requeridos
         Utils utils = new Utils();
         Message message = new Message();
 
         if (utils.validateNotNull(pais) || utils.validateNotEmpty(pais)) {
             log.info("pais required");
-            return message.genericMessage("ERROR", "025", "El campo pais es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo pais es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(numeroTarjeta) || utils.validateNotEmpty(numeroTarjeta)) {
             log.info("numero tarjeta required");
-            return message.genericMessage("ERROR", "025", "El campo número tarjeta es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo número tarjeta es obligatorio", namespace, operationResponse);
+        }
+        if (utils.validateNotNull(tipoTarjeta) || utils.validateNotEmpty(tipoTarjeta)) {
+            log.info("tipoTarjeta required");
+            return message.genericMessage("ERROR", "400", "El campo tipoTarjeta es obligatorio", namespace, operationResponse);
         }
 
         //validar longitudes
         if (!utils.validateLongitude(pais, 3)) {
             log.info("pais, size overload");
-            return message.genericMessage("ERROR", "025", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
         }
         if (!utils.validateLongitude(numeroTarjeta, 16)) {
             log.info("identificacion, size overload");
-            return message.genericMessage("ERROR", "025",
+            return message.genericMessage("ERROR", "400",
                     "La longitud del campo número tarjeta debe ser menor o igual a 16", namespace, operationResponse);
         }
         ConsultaMovimientosResponse response1;
@@ -57,7 +63,7 @@ public class ConsultaMovimientos {
             switch (tipoTarjeta) {
                 case "P":
                     //datos tarjeta privada
-                    response1 = obtenerDatosArca(numeroTarjeta, fechaInicial, fechaFinal, remoteJndiSunnel);
+                    response1 = obtenerDatosArca(numeroTarjeta, fechaInicial, fechaFinal, remoteJndiSunnel, pais);
                     if (response1 != null) {
                         return estructura(response1);
                     } else {
@@ -73,10 +79,10 @@ public class ConsultaMovimientos {
                     }
             }
         } catch (SQLException e) {
-             return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);
+            return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);
         } catch (NullPointerException nul) {
             return message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse);
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);
         }
 
@@ -112,8 +118,9 @@ public class ConsultaMovimientos {
         return result;
     }
 
-    public static ConsultaMovimientosResponse obtenerDatosArca(String numeroTarjeta, String fechaInicial, String fechaFinal, String remoteJndiSunnel) throws Exception {
-        String query = "SELECT * " +
+    public static ConsultaMovimientosResponse obtenerDatosArca(String numeroTarjeta, String fechaInicial, String fechaFinal,
+                                                               String remoteJndiSunnel, String pais) throws Exception {
+        String query1 = "SELECT * " +
                 "    FROM (SELECT co.creditoperationid AS idOperacion, " +
                 "                 'A' AS tipoOperacion, " +
                 "                 TO_CHAR(co.operationdate,'YYYYMMDD') AS fechaTransaccion, " +
@@ -206,12 +213,311 @@ public class ConsultaMovimientos {
                 "                                                       'yyyymmdd') " +
                 "                                          AND TO_DATE ( ? , " +
                 "                                                       'yyyymmdd')) m " +
-                "ORDER BY m.fechaTransaccion, m.idOperacion";//TODO obtener query ARCA
+                "ORDER BY m.fechaTransaccion, m.idOperacion "; //TODO obtener query ARCA SV
 
+        String query2 = " SELECT *  " +
+                "                    FROM (SELECT co.creditoperationid AS idOperacion,  " +
+                "                                 'A' AS tipoOperacion,  " +
+                "                                 TO_CHAR(co.operationdate,'YYYYMMDD') AS fechaTransaccion,  " +
+                "                                 TO_CHAR(co.processingdate,'YYYYMMDD') AS fechaAplicacion,  " +
+                "                                 co.sourcecurrencyid AS moneda,  " +
+                "                                 co.sourceamount AS monto,  " +
+                "                                 co.referencenumber AS numeroAutorizacion,  " +
+                "                                 ot.description AS concepto,  " +
+                "                                 b.description AS comercio  " +
+                "                            FROM SUNNELGTP4.t_gcreditoperation co  " +
+                "                                 INNER JOIN SUNNELGTP4.t_goperationtype ot  " +
+                "                                    ON ot.operationtypeid = co.operationtypeid  " +
+                "                                 INNER JOIN SUNNELGTP4.t_gcardaccount ca  " +
+                "                                    ON ca.accountid = co.creditlineid  " +
+                "                                 INNER JOIN SUNNELGTP4.t_gbranch b  " +
+                "                                    ON b.branchid = co.branchid  " +
+                "                           WHERE     ca.cardid = ?  " +
+                "                                 AND co.operationdate BETWEEN TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                                                          AND TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                          UNION ALL  " +
+                "                          SELECT do.debitoperationid AS idOperacion,  " +
+                "                                 'C' AS tipoOperacion,  " +
+                "                                 TO_CHAR(do.operationdate, 'YYYYMMDD' ) AS fechaTransaccion,  " +
+                "                                 TO_CHAR(do.processingdate, 'YYYYMMDD' ) AS fechaAplicacion,  " +
+                "                                 do.sourcecurrencyid AS moneda,  " +
+                "                                 do.sourceamount AS monto,  " +
+                "                                 pu.referencenumber AS numeroAutorizacion,  " +
+                "                                 ot.description AS concepto,  " +
+                "                                 b.description AS comercio  " +
+                "                            FROM SUNNELGTP4.t_gdebitoperation do  " +
+                "                                 INNER JOIN SUNNELGTP4.t_goperationtype ot  " +
+                "                                    ON ot.operationtypeid = do.operationtypeid  " +
+                "                                 INNER JOIN SUNNELGTP4.t_gpurchaseoperation pu  " +
+                "                                    ON     pu.debitoperationid = do.debitoperationid  " +
+                "                                       AND pu.creditlineid = do.creditlineid  " +
+                "                                 INNER JOIN SUNNELGTP4.t_gcardaccount ca  " +
+                "                                    ON ca.accountid = do.creditlineid  " +
+                "                                 INNER JOIN SUNNELGTP4.t_gbranch b  " +
+                "                                    ON b.branchid = do.branchid  " +
+                "                           WHERE     ca.cardid = ?  " +
+                "                                 AND do.operationdate BETWEEN TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                                                          AND TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                          UNION ALL  " +
+                "                          SELECT cro.creditreversalopid AS idOperacion,  " +
+                "                                 'RA' AS tipoOperacion,  " +
+                "                                 TO_CHAR(cro.reversaldate, 'YYYYMMDD' ) AS fechaTransaccion,  " +
+                "                                 TO_CHAR(cro.reversaldate, 'YYYYMMDD' ) AS fechaAplicacion,  " +
+                "                                 co.sourcecurrencyid AS moneda,  " +
+                "                                 cro.reversalamount AS monto,  " +
+                "                                 cro.referencenumber AS numeroAutorizacion,  " +
+                "                                 'Reversa Operación: ' || cro.creditoperationid AS concepto,  " +
+                "                                 b.description AS comercio  " +
+                "                            FROM SUNNELGTP4.t_gcreditreversalop cro  " +
+                "                                 INNER JOIN SUNNELGTP4.t_gcreditoperation co  " +
+                "                                    ON     co.creditlineid = cro.creditlineid  " +
+                "                                       AND co.creditoperationid = cro.creditoperationid  " +
+                "                                 INNER JOIN SUNNELGTP4.t_gcardaccount ca  " +
+                "                                    ON ca.accountid = cro.creditlineid  " +
+                "                                 INNER JOIN SUNNELGTP4.t_gbranch b  " +
+                "                                    ON b.branchid = cro.branchid  " +
+                "                           WHERE     ca.cardid = ? " +
+                "                                 AND cro.reversaldate BETWEEN TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                                                          AND TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                          UNION ALL  " +
+                "                          SELECT rdo.reversaldebitopid AS idOperacion,  " +
+                "                                 'RC' AS tipoOperacion,  " +
+                "                                 TO_CHAR(rdo.reversaldate, 'YYYYMMDD' ) AS fechaTransaccion,  " +
+                "                                 TO_CHAR(rdo.reversaldate, 'YYYYMMDD' ) AS fechaAplicacion,  " +
+                "                                 do.sourcecurrencyid AS moneda,  " +
+                "                                 rdo.reversalamount AS monto,  " +
+                "                                 rdo.referencenumber AS numeroAutorizacion,  " +
+                "                                 'Reversa Operación: ' || rdo.debitoperationid AS concepto,  " +
+                "                                 b.description AS comercio  " +
+                "                            FROM SUNNELGTP4.t_greversaldebitop rdo  " +
+                "                                 INNER JOIN SUNNELGTP4.t_gdebitoperation do  " +
+                "                                    ON     do.creditlineid = rdo.creditlineid  " +
+                "                                       AND do.debitoperationid = rdo.debitoperationid  " +
+                "                                 INNER JOIN SUNNELGTP4.t_gcardaccount ca  " +
+                "                                    ON ca.accountid = rdo.creditlineid  " +
+                "                                 INNER JOIN SUNNELGTP4.t_gbranch b  " +
+                "                                    ON b.branchid = rdo.branchid  " +
+                "                           WHERE     ca.cardid = ?  " +
+                "                                 AND rdo.reversaldate BETWEEN TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                                                          AND TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd') ) m  " +
+                "                ORDER BY m.fechaTransaccion, m.idOperacion ";
+
+        String query3 = " SELECT *  " +
+                "                    FROM (SELECT co.creditoperationid AS idOperacion,  " +
+                "                                 'A' AS tipoOperacion,  " +
+                "                                 TO_CHAR(co.operationdate,'YYYYMMDD') AS fechaTransaccion,  " +
+                "                                 TO_CHAR(co.processingdate,'YYYYMMDD') AS fechaAplicacion,  " +
+                "                                 co.sourcecurrencyid AS moneda,  " +
+                "                                 co.sourceamount AS monto,  " +
+                "                                 co.referencenumber AS numeroAutorizacion,  " +
+                "                                 ot.description AS concepto,  " +
+                "                                 b.description AS comercio  " +
+                "                            FROM SUNNELNIP1.t_gcreditoperation co  " +
+                "                                 INNER JOIN SUNNELNIP1.t_goperationtype ot  " +
+                "                                    ON ot.operationtypeid = co.operationtypeid  " +
+                "                                 INNER JOIN SUNNELNIP1.t_gcardaccount ca  " +
+                "                                    ON ca.accountid = co.creditlineid  " +
+                "                                 INNER JOIN SUNNELNIP1.t_gbranch b  " +
+                "                                    ON b.branchid = co.branchid  " +
+                "                           WHERE     ca.cardid = ?  " +
+                "                                 AND co.operationdate BETWEEN TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                                                          AND TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                          UNION ALL  " +
+                "                          SELECT do.debitoperationid AS idOperacion,  " +
+                "                                 'C' AS tipoOperacion,  " +
+                "                                 TO_CHAR(do.operationdate, 'YYYYMMDD' ) AS fechaTransaccion,  " +
+                "                                 TO_CHAR(do.processingdate, 'YYYYMMDD' ) AS fechaAplicacion,  " +
+                "                                 do.sourcecurrencyid AS moneda,  " +
+                "                                 do.sourceamount AS monto,  " +
+                "                                 pu.referencenumber AS numeroAutorizacion,  " +
+                "                                 ot.description AS concepto,  " +
+                "                                 b.description AS comercio  " +
+                "                            FROM SUNNELNIP1.t_gdebitoperation do  " +
+                "                                 INNER JOIN SUNNELNIP1.t_goperationtype ot  " +
+                "                                    ON ot.operationtypeid = do.operationtypeid  " +
+                "                                 INNER JOIN SUNNELNIP1.t_gpurchaseoperation pu  " +
+                "                                    ON     pu.debitoperationid = do.debitoperationid  " +
+                "                                       AND pu.creditlineid = do.creditlineid  " +
+                "                                 INNER JOIN SUNNELNIP1.t_gcardaccount ca  " +
+                "                                    ON ca.accountid = do.creditlineid  " +
+                "                                 INNER JOIN SUNNELNIP1.t_gbranch b  " +
+                "                                    ON b.branchid = do.branchid  " +
+                "                           WHERE     ca.cardid = ?  " +
+                "                                 AND do.operationdate BETWEEN TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                                                          AND TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                          UNION ALL  " +
+                "                          SELECT cro.creditreversalopid AS idOperacion,  " +
+                "                                 'RA' AS tipoOperacion,  " +
+                "                                 TO_CHAR(cro.reversaldate, 'YYYYMMDD' ) AS fechaTransaccion,  " +
+                "                                 TO_CHAR(cro.reversaldate, 'YYYYMMDD' ) AS fechaAplicacion,  " +
+                "                                 co.sourcecurrencyid AS moneda,  " +
+                "                                 cro.reversalamount AS monto,  " +
+                "                                 cro.referencenumber AS numeroAutorizacion,  " +
+                "                                 'Reversa Operación: ' || cro.creditoperationid AS concepto,  " +
+                "                                 b.description AS comercio  " +
+                "                            FROM SUNNELNIP1.t_gcreditreversalop cro  " +
+                "                                 INNER JOIN SUNNELNIP1.t_gcreditoperation co  " +
+                "                                    ON     co.creditlineid = cro.creditlineid  " +
+                "                                       AND co.creditoperationid = cro.creditoperationid  " +
+                "                                 INNER JOIN SUNNELNIP1.t_gcardaccount ca  " +
+                "                                    ON ca.accountid = cro.creditlineid  " +
+                "                                 INNER JOIN SUNNELNIP1.t_gbranch b  " +
+                "                                    ON b.branchid = cro.branchid  " +
+                "                           WHERE     ca.cardid = ? " +
+                "                                 AND cro.reversaldate BETWEEN TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                                                          AND TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                          UNION ALL  " +
+                "                          SELECT rdo.reversaldebitopid AS idOperacion,  " +
+                "                                 'RC' AS tipoOperacion,  " +
+                "                                 TO_CHAR(rdo.reversaldate, 'YYYYMMDD' ) AS fechaTransaccion,  " +
+                "                                 TO_CHAR(rdo.reversaldate, 'YYYYMMDD' ) AS fechaAplicacion,  " +
+                "                                 do.sourcecurrencyid AS moneda,  " +
+                "                                 rdo.reversalamount AS monto,  " +
+                "                                 rdo.referencenumber AS numeroAutorizacion,  " +
+                "                                 'Reversa Operación: ' || rdo.debitoperationid AS concepto,  " +
+                "                                 b.description AS comercio  " +
+                "                            FROM SUNNELNIP1.t_greversaldebitop rdo  " +
+                "                                 INNER JOIN SUNNELNIP1.t_gdebitoperation do  " +
+                "                                    ON     do.creditlineid = rdo.creditlineid  " +
+                "                                       AND do.debitoperationid = rdo.debitoperationid  " +
+                "                                 INNER JOIN SUNNELNIP1.t_gcardaccount ca  " +
+                "                                    ON ca.accountid = rdo.creditlineid  " +
+                "                                 INNER JOIN SUNNELNIP1.t_gbranch b  " +
+                "                                    ON b.branchid = rdo.branchid  " +
+                "                           WHERE     ca.cardid = ?  " +
+                "                                 AND rdo.reversaldate BETWEEN TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                                                          AND TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd') ) m  " +
+                "                ORDER BY m.fechaTransaccion, m.idOperacion ";
+        String query4 = " SELECT *  " +
+                "                    FROM (SELECT co.creditoperationid AS idOperacion,  " +
+                "                                 'A' AS tipoOperacion,  " +
+                "                                 TO_CHAR(co.operationdate,'YYYYMMDD') AS fechaTransaccion,  " +
+                "                                 TO_CHAR(co.processingdate,'YYYYMMDD') AS fechaAplicacion,  " +
+                "                                 co.sourcecurrencyid AS moneda,  " +
+                "                                 co.sourceamount AS monto,  " +
+                "                                 co.referencenumber AS numeroAutorizacion,  " +
+                "                                 ot.description AS concepto,  " +
+                "                                 b.description AS comercio  " +
+                "                            FROM SUNNELCRP4.t_gcreditoperation co  " +
+                "                                 INNER JOIN SUNNELCRP4.t_goperationtype ot  " +
+                "                                    ON ot.operationtypeid = co.operationtypeid  " +
+                "                                 INNER JOIN SUNNELCRP4.t_gcardaccount ca  " +
+                "                                    ON ca.accountid = co.creditlineid  " +
+                "                                 INNER JOIN SUNNELCRP4.t_gbranch b  " +
+                "                                    ON b.branchid = co.branchid  " +
+                "                           WHERE     ca.cardid = ?  " +
+                "                                 AND co.operationdate BETWEEN TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                                                          AND TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                          UNION ALL  " +
+                "                          SELECT do.debitoperationid AS idOperacion,  " +
+                "                                 'C' AS tipoOperacion,  " +
+                "                                 TO_CHAR(do.operationdate, 'YYYYMMDD' ) AS fechaTransaccion,  " +
+                "                                 TO_CHAR(do.processingdate, 'YYYYMMDD' ) AS fechaAplicacion,  " +
+                "                                 do.sourcecurrencyid AS moneda,  " +
+                "                                 do.sourceamount AS monto,  " +
+                "                                 pu.referencenumber AS numeroAutorizacion,  " +
+                "                                 ot.description AS concepto,  " +
+                "                                 b.description AS comercio  " +
+                "                            FROM SUNNELCRP4.t_gdebitoperation do  " +
+                "                                 INNER JOIN SUNNELCRP4.t_goperationtype ot  " +
+                "                                    ON ot.operationtypeid = do.operationtypeid  " +
+                "                                 INNER JOIN SUNNELCRP4.t_gpurchaseoperation pu  " +
+                "                                    ON     pu.debitoperationid = do.debitoperationid  " +
+                "                                       AND pu.creditlineid = do.creditlineid  " +
+                "                                 INNER JOIN SUNNELCRP4.t_gcardaccount ca  " +
+                "                                    ON ca.accountid = do.creditlineid  " +
+                "                                 INNER JOIN SUNNELCRP4.t_gbranch b  " +
+                "                                    ON b.branchid = do.branchid  " +
+                "                           WHERE     ca.cardid = ?  " +
+                "                                 AND do.operationdate BETWEEN TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                                                          AND TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                          UNION ALL  " +
+                "                          SELECT cro.creditreversalopid AS idOperacion,  " +
+                "                                 'RA' AS tipoOperacion,  " +
+                "                                 TO_CHAR(cro.reversaldate, 'YYYYMMDD' ) AS fechaTransaccion,  " +
+                "                                 TO_CHAR(cro.reversaldate, 'YYYYMMDD' ) AS fechaAplicacion,  " +
+                "                                 co.sourcecurrencyid AS moneda,  " +
+                "                                 cro.reversalamount AS monto,  " +
+                "                                 cro.referencenumber AS numeroAutorizacion,  " +
+                "                                 'Reversa Operación: ' || cro.creditoperationid AS concepto,  " +
+                "                                 b.description AS comercio  " +
+                "                            FROM SUNNELCRP4.t_gcreditreversalop cro  " +
+                "                                 INNER JOIN SUNNELCRP4.t_gcreditoperation co  " +
+                "                                    ON     co.creditlineid = cro.creditlineid  " +
+                "                                       AND co.creditoperationid = cro.creditoperationid  " +
+                "                                 INNER JOIN SUNNELCRP4.t_gcardaccount ca  " +
+                "                                    ON ca.accountid = cro.creditlineid  " +
+                "                                 INNER JOIN SUNNELCRP4.t_gbranch b  " +
+                "                                    ON b.branchid = cro.branchid  " +
+                "                           WHERE     ca.cardid = ? " +
+                "                                 AND cro.reversaldate BETWEEN TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                                                          AND TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                          UNION ALL  " +
+                "                          SELECT rdo.reversaldebitopid AS idOperacion,  " +
+                "                                 'RC' AS tipoOperacion,  " +
+                "                                 TO_CHAR(rdo.reversaldate, 'YYYYMMDD' ) AS fechaTransaccion,  " +
+                "                                 TO_CHAR(rdo.reversaldate, 'YYYYMMDD' ) AS fechaAplicacion,  " +
+                "                                 do.sourcecurrencyid AS moneda,  " +
+                "                                 rdo.reversalamount AS monto,  " +
+                "                                 rdo.referencenumber AS numeroAutorizacion,  " +
+                "                                 'Reversa Operación: ' || rdo.debitoperationid AS concepto,  " +
+                "                                 b.description AS comercio  " +
+                "                            FROM SUNNELCRP4.t_greversaldebitop rdo  " +
+                "                                 INNER JOIN SUNNELCRP4.t_gdebitoperation do  " +
+                "                                    ON     do.creditlineid = rdo.creditlineid  " +
+                "                                       AND do.debitoperationid = rdo.debitoperationid  " +
+                "                                 INNER JOIN SUNNELCRP4.t_gcardaccount ca  " +
+                "                                    ON ca.accountid = rdo.creditlineid  " +
+                "                                 INNER JOIN SUNNELCRP4.t_gbranch b  " +
+                "                                    ON b.branchid = rdo.branchid  " +
+                "                           WHERE     ca.cardid = ?  " +
+                "                                 AND rdo.reversaldate BETWEEN TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd')  " +
+                "                                                          AND TO_DATE ( ? ,  " +
+                "                                                                       'yyyymmdd') ) m  " +
+                "                ORDER BY m.fechaTransaccion, m.idOperacion ";
 
         ConnectionHandler connectionHandler = new ConnectionHandler();
         Connection conexion = connectionHandler.getConnection(remoteJndiSunnel);
-        PreparedStatement sentencia = conexion.prepareStatement(query);
+
+
+        PreparedStatement sentencia = null;
+        switch (pais){
+            case "SV":
+                sentencia = conexion.prepareStatement(query1);
+                break;
+            case "GT":
+                sentencia = conexion.prepareStatement(query2);
+                break;
+            case "NI":
+                sentencia = conexion.prepareStatement(query3);
+                break;
+            case "CR":
+                sentencia = conexion.prepareStatement(query4);
+                break;
+        }
 
         sentencia.setString(1, numeroTarjeta); //TODO agregar parametros
         sentencia.setString(2, fechaInicial);
@@ -230,7 +536,9 @@ public class ConsultaMovimientos {
         ConsultaMovimientosResponse response1 = new ConsultaMovimientosResponse();
         List<MovimientosResponse> listaMovimientos = new ArrayList<>();
 
+        int counter = 0;
         while (rs.next()) {
+            counter++;
             MovimientosResponse movimientosResponse = new MovimientosResponse();
             //TODO agregar a xml
             movimientosResponse.setTipoMovimiento(rs.getString("tipoOperacion"));
@@ -244,7 +552,13 @@ public class ConsultaMovimientos {
         }
         conexion.close();
         response1.setMovimientos(listaMovimientos);
-        return response1;
+
+        if(counter>0){
+            return response1;
+        }else{
+            return null;
+        }
+
     }
 
 
