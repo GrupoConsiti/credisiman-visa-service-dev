@@ -100,28 +100,28 @@ public class ListadoEstadosCuentas {
 
 //        EL SALVADOR
         String query1 = "SELECT " +
-                "        TO_CHAR(eco.fecha_corte,'YYYY/MM/DD') AS fechaCorte " +
+                "        TO_CHAR(eco.fecha_corte,'YYYYMMDD') AS fechaCorte " +
                 "        FROM ORIONREPOSV.als_estados_cuenta_orion eco " +
                 "        WHERE eco.digitos_tarjeta = ? AND eco.id_cliente = ? " +
                 "        ORDER BY eco.fecha_corte DESC ";
 
 //        GUATEMALA
         String query2 = "SELECT " +
-                "        TO_CHAR(eco.fecha_corte,'YYYY/MM/DD') AS fechaCorte " +
+                "        TO_CHAR(eco.fecha_corte,'YYYYMMDD') AS fechaCorte " +
                 "        FROM ORIONREPOGT.als_estados_cuenta_orion eco " +
                 "        WHERE eco.digitos_tarjeta = ? AND eco.id_cliente = ? " +
                 "        ORDER BY eco.fecha_corte DESC ";
 
 //        NICARAGUA
         String query3 = "SELECT " +
-                "        TO_CHAR(eco.fecha_corte,'YYYY/MM/DD') AS fechaCorte " +
+                "        TO_CHAR(eco.fecha_corte,'YYYYMMDD') AS fechaCorte " +
                 "        FROM ORIONREPOGT.als_estados_cuenta_orion eco " +
                 "        WHERE eco.digitos_tarjeta = ? AND eco.id_cliente = ? " +
                 "        ORDER BY eco.fecha_corte DESC ";
 
 //        COSTA RICA
         String query4 = "SELECT " +
-                "        TO_CHAR(eco.fecha_corte,'YYYY/MM/DD') AS fechaCorte " +
+                "        TO_CHAR(eco.fecha_corte,'YYYYMMDD') AS fechaCorte " +
                 "        FROM ORIONREPOCR.als_estados_cuenta_orion eco " +
                 "        WHERE eco.digitos_tarjeta = ? AND eco.id_cliente = ? " +
                 "        ORDER BY eco.fecha_corte DESC ";
