@@ -63,8 +63,8 @@ public class BloqueoDesbloqueoTarjeta {
             switch (tipoTarjeta) {
                 case "P":
                     //datos tarjeta privada
-                    BloqueoDesbloqueoTarjetaResponse response1= null;
-                    response1 = obtenerDatosArca(numeroTarjeta, estadoDeseado, remoteJndiSunnel);
+                    BloqueoDesbloqueoTarjetaResponse response1 = null;
+                    response1 = obtenerDatosArca(numeroTarjeta, estadoDeseado, remoteJndiSunnel, pais);
                     if (response1 != null) {
                         return estructura(response1);
                     } else {
@@ -90,31 +90,100 @@ public class BloqueoDesbloqueoTarjeta {
     }
 
     public static BloqueoDesbloqueoTarjetaResponse obtenerDatosArca(String numeroTarjeta, String estadoDeseado,
-                                                                    String remoteJndiSunnel) throws Exception {
+                                                                    String remoteJndiSunnel, String pais) throws Exception {
         BloqueoDesbloqueoTarjetaResponse response = new BloqueoDesbloqueoTarjetaResponse();
+
+        //        query's el salvador
 //        BLOQUEO TEMPORAL (estadoDeseado 1)
-        String query1 = "UPDATE SUNNELP3.t_gcard SET riskconditionind = 'T', riskconditiondate = CURRENT_DATE, " +
+        String query1SV = "UPDATE SUNNELP3.t_gcard SET riskconditionind = 'T', riskconditiondate = CURRENT_DATE, " +
                 "riskcondreasoncodeid = 1 WHERE cardid = ? AND riskcondreasoncodeid IS NULL";
 
 //        BLOQUEO PERMANENTE (estadoDeseado 2)
-        String query2 = "UPDATE SUNNELP3.t_gcard SET riskconditionind = 'T', riskconditiondate = CURRENT_DATE, " +
+        String query2SV = "UPDATE SUNNELP3.t_gcard SET riskconditionind = 'T', riskconditiondate = CURRENT_DATE, " +
                 "riskcondreasoncodeid = 2 WHERE cardid = ? ";
 
 //        DESBLOQUEO TEMPORAL (estadoDeseado 0)
-        String query3 = "UPDATE SUNNELP3.t_gcard SET riskconditionind = 'F', riskconditiondate = null, " +
+        String query3SV = "UPDATE SUNNELP3.t_gcard SET riskconditionind = 'F', riskconditiondate = null, " +
                 "riskcondreasoncodeid = null WHERE cardid = ? AND riskcondreasoncodeid = 1";
 
-//        query's el salvador
+//           query's guatemala
+        String query1GT = " UPDATE SUNNELGTP4.t_gcard " +
+                "        SET riskconditionind = 'T', " +
+                "                riskconditiondate = CURRENT_DATE, " +
+                "                riskcondreasoncodeid = 1 " +
+                "        WHERE cardid = ? AND riskcondreasoncodeid IS NULL ";
 
+        String query2GT = "UPDATE SUNNELGTP4.t_gcard " +
+                "        SET riskconditionind = 'T', " +
+                "            riskconditiondate = CURRENT_DATE, " +
+                "            riskcondreasoncodeid = 2 " +
+                "        WHERE cardid = ? ";
 
+        String query3GT = " UPDATE SUNNELGTP4.t_gcard " +
+                "   SET riskconditionind = 'F', " +
+                "       riskconditiondate = NULL, " +
+                "       riskcondreasoncodeid = NULL " +
+                " WHERE cardid = ? AND riskcondreasoncodeid = 1 ";
+
+        //           query's Nicaragua
+        String query1NI = " UPDATE SUNNELNIP1.t_gcard " +
+                "        SET riskconditionind = 'T', " +
+                "                riskconditiondate = CURRENT_DATE, " +
+                "                riskcondreasoncodeid = 1 " +
+                "        WHERE cardid = ? AND riskcondreasoncodeid IS NULL ";
+
+        String query2NI = "UPDATE SUNNELNIP1.t_gcard " +
+                "        SET riskconditionind = 'T', " +
+                "            riskconditiondate = CURRENT_DATE, " +
+                "            riskcondreasoncodeid = 2 " +
+                "        WHERE cardid = ? ";
+
+        String query3NI = " UPDATE SUNNELNIP1.t_gcard " +
+                "   SET riskconditionind = 'F', " +
+                "       riskconditiondate = NULL, " +
+                "       riskcondreasoncodeid = NULL " +
+                " WHERE cardid = ? AND riskcondreasoncodeid = 1 ";
+
+        //           query's Costa Rica
+        String query1CR = " UPDATE SUNNELCRP4.t_gcard " +
+                "        SET riskconditionind = 'T', " +
+                "                riskconditiondate = CURRENT_DATE, " +
+                "                riskcondreasoncodeid = 1 " +
+                "        WHERE cardid = ? AND riskcondreasoncodeid IS NULL ";
+
+        String query2CR = "UPDATE SUNNELCRP4.t_gcard " +
+                "        SET riskconditionind = 'T', " +
+                "            riskconditiondate = CURRENT_DATE, " +
+                "            riskcondreasoncodeid = 2 " +
+                "        WHERE cardid = ? ";
+
+        String query3CR = " UPDATE SUNNELCRP4.t_gcard " +
+                "   SET riskconditionind = 'F', " +
+                "       riskconditiondate = NULL, " +
+                "       riskcondreasoncodeid = NULL " +
+                " WHERE cardid = ? AND riskcondreasoncodeid = 1 ";
 
         ConnectionHandler connectionHandler = new ConnectionHandler();
         Connection conexion = connectionHandler.getConnection(remoteJndiSunnel);
-        int result=0;
+        int result = 0;
+        PreparedStatement ps1 = null;
 
         switch (estadoDeseado) {
             case "1":
-                PreparedStatement ps1 = conexion.prepareStatement(query1);
+                switch (pais) {
+                    case "SV":
+                        ps1 = conexion.prepareStatement(query1SV);
+                        break;
+                    case "GT":
+                        ps1 = conexion.prepareStatement(query1GT);
+                        break;
+                    case "NI":
+                        ps1 = conexion.prepareStatement(query1NI);
+                        break;
+                    case "CR":
+                        ps1 = conexion.prepareStatement(query1CR);
+                        break;
+                }
                 ps1.setString(1, numeroTarjeta);
                 result = ps1.executeUpdate();
                 ps1.close();
@@ -123,7 +192,7 @@ public class BloqueoDesbloqueoTarjeta {
                     response.setStatusCode("00");
                     response.setStatus("SUCCESS");
                     log.info(new ObjectMapper().writeValueAsString(response));
-                }else{
+                } else {
                     response.setStatusMessage("La tarjeta ya se encuentra bloqueada");
                     response.setStatusCode("400");
                     response.setStatus("ERROR");
@@ -131,7 +200,22 @@ public class BloqueoDesbloqueoTarjeta {
                 }
                 break;
             case "2":
-                PreparedStatement ps2 = conexion.prepareStatement(query2);
+                PreparedStatement ps2 = null;
+                switch (pais) {
+                    case "SV":
+                        ps2 = conexion.prepareStatement(query2SV);
+                        break;
+                    case "GT":
+                        ps2 = conexion.prepareStatement(query2GT);
+                        break;
+                    case "NI":
+                        ps2 = conexion.prepareStatement(query2NI);
+                        break;
+                    case "CR":
+                        ps2 = conexion.prepareStatement(query2CR);
+                        break;
+                }
+
                 ps2.setString(1, numeroTarjeta);
                 result = ps2.executeUpdate();
                 ps2.close();
@@ -140,7 +224,7 @@ public class BloqueoDesbloqueoTarjeta {
                     response.setStatusCode("00");
                     response.setStatus("SUCCESS");
                     log.info(new ObjectMapper().writeValueAsString(response));
-                }else{
+                } else {
                     response.setStatusMessage("La tarjeta ya se encuentra bloqueada");
                     response.setStatusCode("400");
                     response.setStatus("ERROR");
@@ -148,7 +232,22 @@ public class BloqueoDesbloqueoTarjeta {
                 }
                 break;
             case "0":
-                PreparedStatement ps3 = conexion.prepareStatement(query3);
+                PreparedStatement ps3 = null;
+                switch (pais) {
+                    case "SV":
+                        ps3 = conexion.prepareStatement(query3SV);
+                        break;
+                    case "GT":
+                        ps3 = conexion.prepareStatement(query3GT);
+                        break;
+                    case "NI":
+                        ps3 = conexion.prepareStatement(query3NI);
+                        break;
+                    case "CR":
+                        ps3 = conexion.prepareStatement(query3CR);
+                        break;
+                }
+
                 ps3.setString(1, numeroTarjeta);
                 result = ps3.executeUpdate();
                 ps3.close();
@@ -157,7 +256,7 @@ public class BloqueoDesbloqueoTarjeta {
                     response.setStatusCode("00");
                     response.setStatus("SUCCESS");
                     log.info(new ObjectMapper().writeValueAsString(response));
-                }else{
+                } else {
                     response.setStatusMessage("La tarjeta ya se encuentra desbloqueada");
                     response.setStatusCode("400");
                     response.setStatus("ERROR");
@@ -200,20 +299,21 @@ public class BloqueoDesbloqueoTarjeta {
 
         log.info(new ObjectMapper().writeValueAsString(response1));
 
-        if(response1!=null){
-            if(response1.getStatusMessage().equals("GRUPO DE USUARIO INHABILITADO P/CAMBIO..")){
-                if(estadoDeseado.equals("00")){
+        if (response1 != null) {
+            if (response1.getStatusMessage().equals("GRUPO DE USUARIO INHABILITADO P/CAMBIO..")) {
+                if (estadoDeseado.equals("00")) {
                     response1.setStatusMessage("La tarjeta ya se encuentra desbloqueada");
                 }
-            }if(response1.getStatusMessage().equals("GRUPO DE USUARIO INHABILITADO P/CAMBIO..")){
-                if(estadoDeseado.equals("28")){
+            }
+            if (response1.getStatusMessage().equals("GRUPO DE USUARIO INHABILITADO P/CAMBIO..")) {
+                if (estadoDeseado.equals("28")) {
                     response1.setStatusMessage("La tarjeta ya se encuentra bloqueada");
                 }
             }
-            if(response1.getStatusMessage().equals("TRANSACCION REALIZADA CON EXITO ........")){
-                    response1.setStatusCode("00");
-                    response1.setStatus("SUCCES");
-                    response1.setStatusMessage("Proceso exitoso");
+            if (response1.getStatusMessage().equals("TRANSACCION REALIZADA CON EXITO ........")) {
+                response1.setStatusCode("00");
+                response1.setStatus("SUCCES");
+                response1.setStatusMessage("Proceso exitoso");
             }
         }
         return response1;
