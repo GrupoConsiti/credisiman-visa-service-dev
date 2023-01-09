@@ -1,10 +1,17 @@
 package com.siman.credisiman.visa.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.siman.credisiman.visa.dto.crm.FechaCorte;
+import com.siman.credisiman.visa.dto.crm.LoginResponse;
+import com.siman.credisiman.visa.dto.crm.ValidateToken;
 import com.siman.credisiman.visa.utils.ConnectionHandler;
 import com.siman.credisiman.visa.utils.Message;
 import com.siman.credisiman.visa.utils.Utils;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,18 +66,23 @@ public class ListadoEstadosCuentas {
                     //datos tarjeta privada
                     ArrayList<String> response1;
                     response1 = obtenerDatosTarjetaPrivada(numeroTarjeta, remoteJndiOrion, identificacion, pais);
+
+                    ArrayList<String> response3;
+                    response3 = obtenerFechaCortePrivada(usuarioCrm, passwordCrm, urlCrm, numeroTarjeta, pais);
+
                     if (response1.size() > 0) {
-                        return estructura(response1);
-                    } else {
-                        log.info("obtenerConsultaMovimientos response = [" + message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse) + "]");
-                        return message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse);
+                        return estructura(response1, "ORION_PRIVADA");
                     }
+                    if (response3 != null) {
+                        return estructura(response3, "CRM_PRIVADA");
+                    }
+                    log.info("obtenerConsultaMovimientos response = [" + message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse) + "]");
+                    return message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse);
                 case "V":
                     //datos tarjeta visa
-                    //ArrayList<String> response2 = obtenerDatosSiscard(pais, numeroTarjeta,  siscardUrl);
                     ArrayList<String> response2 = obtenerDatosTarjetaVisa(numeroTarjeta, remoteJndiOrion, identificacion, pais);
                     if (response2.size() > 0) {
-                        return estructura(response2);
+                        return estructura(response2, "ORION_VISA");
                     } else {
                         log.info("obtenerConsultaMovimientos response = [" + message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse) + "]");
                         return message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse);
@@ -219,7 +231,7 @@ public class ListadoEstadosCuentas {
 
     }
 
-    public static XmlObject estructura(ArrayList<String> response1) {
+    public static XmlObject estructura(ArrayList<String> response1, String origen) {
         XmlObject result = XmlObject.Factory.newInstance();
         XmlCursor cursor = result.newCursor();
         QName responseQName = new QName(namespace, operationResponse);
@@ -233,9 +245,95 @@ public class ListadoEstadosCuentas {
             cursor.insertElementWithText(new QName(namespace, "fechaCorte"), fechaCorte);
             cursor.toParent();
         }
+        cursor.insertElementWithText(new QName(namespace, "origen"), origen);
         cursor.toParent();
 
         log.info("ObtenerListadoEstadosCuenta response = [" + result + "]");
         return result;
     }
+
+    public static ArrayList<String> obtenerFechaCortePrivada(String usuarioCrm, String passwordCrm,
+                                                             String urlCrm, String numeroTarjeta, String pais) throws Exception {
+        LoginResponse response = new LoginResponse();
+        response = loginCrm(usuarioCrm, passwordCrm, urlCrm);
+        ValidateToken validation = new ValidateToken();
+        FechaCorte fechaCorte = new FechaCorte();
+        ArrayList<String> fechasCorte = new ArrayList<>();
+
+
+        if (response.getAccess_token() != null) {
+            validation = ValidateloginCrm(response.getAccess_token(), urlCrm);
+            if (validation.getResponse().getError_message().equals("Sucess")) {
+                log.info("token valid");
+                fechaCorte = estadosCuentaFechaCrm(numeroTarjeta, response.getAccess_token(), pais, urlCrm);
+                log.info(fechaCorte.getErrorMessage());
+                if (fechaCorte.getErrorMessage().equals("No data found")) {
+                    return null;
+                }
+                if (fechaCorte.getErrorMessage().equals("Bad request.Tarjeta Invalida")) {
+                    return null;
+                }
+
+                fechasCorte.addAll(fechaCorte.getFechaCorte());
+                return fechasCorte;
+            } else {
+                log.info("invalid token");
+                fechaCorte = new FechaCorte();
+                fechaCorte.setErrorMessage(validation.getResponse().getError_message());
+                fechaCorte.setErrorMessage(validation.getResponse().getError_code());
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public static FechaCorte estadosCuentaFechaCrm(String numeroTarjeta, String token, String pais, String url)
+            throws Exception {
+        JSONObject jsonSend = new JSONObject(); //json a enviar
+        jsonSend.put("numeroTarjeta", numeroTarjeta)
+                .put("token", token)
+                .put("pais", pais);
+
+        HttpResponse<String> jsonResponse //realizar petición demiante unirest
+                = Unirest.post(url.concat("/crm/api/v1.0.0/arca/getEstadosCuentaFecha"))
+                .header("Content-Type", "application/json")
+                .body(jsonSend.toString())
+                .asString();
+
+        //capturar respuesta
+        JSONObject response = new JSONObject(jsonResponse.getBody());
+
+        return new ObjectMapper().readValue(response.toString(), FechaCorte.class);
+    }
+
+    public static LoginResponse loginCrm(String username, String password, String url) throws Exception {
+
+        JSONObject jsonSend = new JSONObject(); //json a enviar
+        jsonSend.put("username", username)
+                .put("password", password);
+
+        HttpResponse<String> jsonResponse //realizar petición demiante unirest
+                = Unirest.post(url.concat("/api/security/v1.0.0/login"))
+                .header("Content-Type", "application/json")
+                .body(jsonSend.toString())
+                .asString();
+
+        //capturar respuesta
+        JSONObject response = new JSONObject(jsonResponse.getBody());
+
+        return new ObjectMapper().readValue(response.toString(), LoginResponse.class);
+    }
+
+    public static ValidateToken ValidateloginCrm(String token, String url) throws Exception {
+        HttpResponse<String> jsonResponse //realizar petición demiante unirest
+                = Unirest.get(url.concat("/api/security/v1.0.0/token/validate"))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer ".concat(token))
+                .asString();
+
+        //capturar respuesta
+        JSONObject response = new JSONObject(jsonResponse.getBody());
+        return new ObjectMapper().readValue(response.toString(), ValidateToken.class);
+    }
+
 }

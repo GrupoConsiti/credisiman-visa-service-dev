@@ -63,8 +63,8 @@ public class ConsultaEstadoCuenta {
                     response3 = EstadoCuentaOrionPrivada(remoteJndiOrion, pais, identificacion, numeroTarjeta, fechaCorte);
 
                     if (response1 != null) {
-                        log.info("RESPONSE" + estructura(response1, "CRM"));
-                        return estructura(response1, "CRM");
+                        log.info("RESPONSE" + estructura(response1, "CRM_PRIVADA"));
+                        return estructura(response1, "CRM_PRIVADA");
                     }
                     if (response3 != null) {
                         log.info("RESPONSE" + estructura(response3, "ORION_PRIVADA"));
