@@ -270,6 +270,7 @@ public class BloqueoDesbloqueoTarjeta {
                 log.info(new ObjectMapper().writeValueAsString(response));
                 break;
         }
+        conexion.commit();
         conexion.close();
         return response;
     }
