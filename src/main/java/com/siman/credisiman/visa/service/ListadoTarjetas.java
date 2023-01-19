@@ -57,12 +57,17 @@ public class ListadoTarjetas {
         try {
             //all code here
             List<Tarjetas> response2 = obtenerDatosArca(identificacion, remoteJndiSunnel, pais);
+            List<Tarjetas> response3 = null;
+            response3 = obtenerDatosSiscard(pais, identificacion, siscardUrl);
+            if(response2 != null && response3 != null){
+                response2.addAll(response3);
+                return estructura(response2);
+            }
             if (response2 != null) {
                 log.info("ARCA");
                 return estructura(response2);
             }
-            List<Tarjetas> response3 = null;
-            response3 = obtenerDatosSiscard(pais, identificacion, siscardUrl);
+
             if (response3 != null) {
                 log.info("tarjetas evertec: " + response3.size());
                 log.info("EVERTEC");

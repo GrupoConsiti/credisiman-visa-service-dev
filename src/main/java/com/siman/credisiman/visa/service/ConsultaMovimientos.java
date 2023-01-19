@@ -110,6 +110,7 @@ public class ConsultaMovimientos {
             cursor.insertElementWithText(new QName(namespace, "monto"), response1.getMovimientos().get(i).getMonto());
             cursor.insertElementWithText(new QName(namespace, "numeroAutorizacion"), response1.getMovimientos().get(i).getNumeroAutorizacion());
             cursor.insertElementWithText(new QName(namespace, "comercio"), response1.getMovimientos().get(i).getDescripcionComercio());
+            cursor.insertElementWithText(new QName(namespace, "concepto"), response1.getMovimientos().get(i).getTipo());
             cursor.toParent();
         }
 
@@ -548,6 +549,7 @@ public class ConsultaMovimientos {
             movimientosResponse.setMonto(rs.getString("monto"));
             movimientosResponse.setNumeroAutorizacion(rs.getString("numeroAutorizacion"));
             movimientosResponse.setDescripcionComercio(rs.getString("comercio"));
+            movimientosResponse.setTipo(rs.getString("concepto"));
             listaMovimientos.add(movimientosResponse);
         }
         conexion.close();

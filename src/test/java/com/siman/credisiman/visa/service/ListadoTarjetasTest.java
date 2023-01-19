@@ -11,12 +11,26 @@ public class ListadoTarjetasTest {
 
     @Test
     public void obtenerDatosClienteOk() {
-        XmlObject result = ListadoTarjetas.obtenerListadoTarjetas("SV", "333214569", "jdbc/SUNTST", "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion", "usuario", "600831, 600831, 600831");
+        XmlObject result = ListadoTarjetas.obtenerListadoTarjetas("SV", "333214569", "jdbc/SUNTST",
+                "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion",
+                "usuario", "600831, 600831, 600831");
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath( "declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());
         assertEquals("SUCCESS", ((SimpleValue) result.selectPath( "declare namespace ns='" + NS + "' " + ".//ns:status")[0]).getStringValue());
     }
 
+    @Test
+    public void obtenerDatosClienteMultiplesOk() {
+        XmlObject result = ListadoTarjetas.obtenerListadoTarjetas("SV", "015057232",
+                "jdbc/SUNTST",
+                "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion",
+                "usuario", "600831, 600831, 600831");
+        //Status
+        assertEquals("00", ((SimpleValue) result.selectPath( "declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());
+        assertEquals("SUCCESS", ((SimpleValue) result.selectPath( "declare namespace ns='" + NS + "' " + ".//ns:status")[0]).getStringValue());
+    }
+
+    //015057232
     @Test
     public void obtenerDatosClienteOkVisaGT() {
         XmlObject result = ListadoTarjetas.obtenerListadoTarjetas("GT", "2452930431101",
