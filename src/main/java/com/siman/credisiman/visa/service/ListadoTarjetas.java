@@ -740,36 +740,38 @@ public class ListadoTarjetas {
             response1 = new ObjectMapper().readValue(response.toString(), ListadoTarjetasResponse.class);
             List<Tarjetas> responseList = new ArrayList<>();
 
-            for (int i = 0; i < response1.getCuentas().size(); i++) {
-                CuentasResponse cuentas = response1.getCuentas().get(i);
-                for (TarjetasResponse tarjetas : cuentas.getTarjetas()) {
-                    Tarjetas tarjeta = new Tarjetas();
+            if(response1.getRespuestas() == null) {
+                for (int i = 0; i < response1.getCuentas().size(); i++) {
+                    CuentasResponse cuentas = response1.getCuentas().get(i);
+                    for (TarjetasResponse tarjetas : cuentas.getTarjetas()) {
+                        Tarjetas tarjeta = new Tarjetas();
 
-                    tarjeta.setNumeroTarjeta(tarjetas.getNumeroTarjeta());
-                    tarjeta.setCuenta(cuentas.getCuenta());
-                    tarjeta.setTipoTarjeta(tarjetas.getTipoTarjeta());
-                    tarjeta.setNombreTH(tarjetas.getNombreTH());
-                    tarjeta.setEstado(tarjetas.getEstadoTarjeta());
-                    tarjeta.setLimiteCreditoLocal(tarjetas.getLimiteCreditoLocal());
-                    tarjeta.setLimiteCreditoDolares(tarjetas.getLimiteCreditoInter());
-                    tarjeta.setSaldoLocal(cuentas.getSaldoLocal());
-                    tarjeta.setSaldoDolares(cuentas.getSaldoInter());
-                    tarjeta.setDisponibleLocal(tarjetas.getDispLocalTarjeta());
-                    tarjeta.setDisponibleDolares(tarjetas.getDispIntTarjeta());
-                    tarjeta.setPagoMinimoLocal(cuentas.getPagoMinimoLocal());
-                    tarjeta.setPagoMinimoDolares(cuentas.getPagoMinimoInt());
-                    tarjeta.setPagoMinimoVencidoLocal(" ");
-                    tarjeta.setPagoMinimoVencidoDolares(" ");
-                    tarjeta.setPagoContadoLocal(cuentas.getPagoContadoLocal());
-                    tarjeta.setPagoContadoDolares(cuentas.getPagoContInt());
-                    tarjeta.setFechaPago(cuentas.getFechaVencimientoPago());
-                    tarjeta.setFechaUltimoCorte(" ");
-                    tarjeta.setSaldoMonedero(" ");
-                    tarjeta.setRombosAcumulados(" ");
-                    tarjeta.setRombosDinero(cuentas.getSaldoPremiacion());
-                    tarjeta.setFondosReservados(" ");
+                        tarjeta.setNumeroTarjeta(tarjetas.getNumeroTarjeta());
+                        tarjeta.setCuenta(cuentas.getCuenta());
+                        tarjeta.setTipoTarjeta(tarjetas.getTipoTarjeta());
+                        tarjeta.setNombreTH(tarjetas.getNombreTH());
+                        tarjeta.setEstado(tarjetas.getEstadoTarjeta());
+                        tarjeta.setLimiteCreditoLocal(tarjetas.getLimiteCreditoLocal());
+                        tarjeta.setLimiteCreditoDolares(tarjetas.getLimiteCreditoInter());
+                        tarjeta.setSaldoLocal(cuentas.getSaldoLocal());
+                        tarjeta.setSaldoDolares(cuentas.getSaldoInter());
+                        tarjeta.setDisponibleLocal(tarjetas.getDispLocalTarjeta());
+                        tarjeta.setDisponibleDolares(tarjetas.getDispIntTarjeta());
+                        tarjeta.setPagoMinimoLocal(cuentas.getPagoMinimoLocal());
+                        tarjeta.setPagoMinimoDolares(cuentas.getPagoMinimoInt());
+                        tarjeta.setPagoMinimoVencidoLocal(" ");
+                        tarjeta.setPagoMinimoVencidoDolares(" ");
+                        tarjeta.setPagoContadoLocal(cuentas.getPagoContadoLocal());
+                        tarjeta.setPagoContadoDolares(cuentas.getPagoContInt());
+                        tarjeta.setFechaPago(cuentas.getFechaVencimientoPago());
+                        tarjeta.setFechaUltimoCorte(" ");
+                        tarjeta.setSaldoMonedero(" ");
+                        tarjeta.setRombosAcumulados(" ");
+                        tarjeta.setRombosDinero(cuentas.getSaldoPremiacion());
+                        tarjeta.setFondosReservados(" ");
 
-                    responseList.add(tarjeta);
+                        responseList.add(tarjeta);
+                    }
                 }
             }
             return responseList;
