@@ -22,21 +22,6 @@ public class ModificarLimiteTarjeta {
         Utils utils = new Utils();
         Message message = new Message();
 
-
-        //validar campos requeridos
-        if (utils.validateNotNull(pais) || utils.validateNotEmpty(pais)) {
-            return message.genericMessage("ERROR", "400", "El campo pais es obligatorio", namespace, operationResponse);
-        }
-        if (utils.validateNotNull(numeroTarjeta) || utils.validateNotEmpty(numeroTarjeta)) {
-            return message.genericMessage("ERROR", "400", "El campo número tarjeta es obligatorio", namespace, operationResponse);
-        }
-        if (utils.validateNotNull(monto) || utils.validateNotEmpty(monto)) {
-            return message.genericMessage("ERROR", "400", "El campo número monto es obligatorio", namespace, operationResponse);
-        }
-        if (utils.validateNotNull(tipoTarjeta) || utils.validateNotEmpty(tipoTarjeta)) {
-            return message.genericMessage("ERROR", "400", "El campo tipoTarjeta es obligatorio", namespace, operationResponse);
-        }
-
         XmlObject result = XmlObject.Factory.newInstance();
         XmlCursor cursor = result.newCursor();
         QName responseQName = new QName(namespace, operationResponse);
