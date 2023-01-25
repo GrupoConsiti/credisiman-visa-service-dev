@@ -149,7 +149,13 @@ public class ListadoTarjetas {
                 "    ) AS tipoTarjeta, " +
                 "    cu.aliasname AS nombreTH, " +
                 "    CASE " +
-                "        WHEN cl.blockedind = 'T' THEN 'Bloqueada' " +
+                "        WHEN ( " +
+                "            cl.blockedind = 'T' " +
+                "            OR c.lostcardind = 'T' " +
+                "            OR cl.uncollectableind = 'T' " +
+                "        ) THEN 'Bloqueada' " +
+                "        WHEN c.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' " +
+                "        WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
                 "        ELSE 'Activa' " +
                 "    END AS estado, " +
                 "    CASE " +
@@ -261,8 +267,6 @@ public class ListadoTarjetas {
                 "    ) cb ON cb.creditlineid = cl.creditlineid " +
                 "    AND cb.currencyid = cl.currencycreditlimit " +
                 "WHERE c.closedind = 'F' " +
-                "    AND c.riskconditionind = 'F' " +
-                "    AND c.lostcardind = 'F' " +
                 "    AND cu.identificationnumber IN( ? , ? ) ";//TODO obtener query arca
 
 
@@ -279,7 +283,13 @@ public class ListadoTarjetas {
                 "    ) AS tipoTarjeta, " +
                 "    cu.aliasname AS nombreTH, " +
                 "    CASE " +
-                "        WHEN cl.blockedind = 'T' THEN 'Bloqueada' " +
+                "        WHEN ( " +
+                "            cl.blockedind = 'T' " +
+                "            OR c.lostcardind = 'T' " +
+                "            OR cl.uncollectableind = 'T' " +
+                "        ) THEN 'Bloqueada' " +
+                "        WHEN c.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' " +
+                "        WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
                 "        ELSE 'Activa' " +
                 "    END AS estado, " +
                 "    CASE " +
@@ -391,8 +401,6 @@ public class ListadoTarjetas {
                 "    ) cb ON cb.creditlineid = cl.creditlineid " +
                 "    AND cb.currencyid = cl.currencycreditlimit " +
                 "WHERE c.closedind = 'F' " +
-                "    AND c.riskconditionind = 'F' " +
-                "    AND c.lostcardind = 'F' " +
                 "    AND cu.identificationnumber IN( ? , ? ) ";
 
         String query3 = " SELECT c.cardid AS numeroTarjeta, " +
@@ -408,7 +416,13 @@ public class ListadoTarjetas {
                 "    ) AS tipoTarjeta, " +
                 "    cu.aliasname AS nombreTH, " +
                 "    CASE " +
-                "        WHEN cl.blockedind = 'T' THEN 'Bloqueada' " +
+                "        WHEN ( " +
+                "            cl.blockedind = 'T' " +
+                "            OR c.lostcardind = 'T' " +
+                "            OR cl.uncollectableind = 'T' " +
+                "        ) THEN 'Bloqueada' " +
+                "        WHEN c.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' " +
+                "        WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
                 "        ELSE 'Activa' " +
                 "    END AS estado, " +
                 "    CASE " +
@@ -520,8 +534,6 @@ public class ListadoTarjetas {
                 "    ) cb ON cb.creditlineid = cl.creditlineid " +
                 "    AND cb.currencyid = cl.currencycreditlimit " +
                 "WHERE c.closedind = 'F' " +
-                "    AND c.riskconditionind = 'F' " +
-                "    AND c.lostcardind = 'F' " +
                 "    AND cu.identificationnumber IN( ? , ? ) ";
 
         String query4 = " SELECT c.cardid AS numeroTarjeta, " +
@@ -537,7 +549,13 @@ public class ListadoTarjetas {
                 "    ) AS tipoTarjeta, " +
                 "    cu.aliasname AS nombreTH, " +
                 "    CASE " +
-                "        WHEN cl.blockedind = 'T' THEN 'Bloqueada' " +
+                "        WHEN ( " +
+                "            cl.blockedind = 'T' " +
+                "            OR c.lostcardind = 'T' " +
+                "            OR cl.uncollectableind = 'T' " +
+                "        ) THEN 'Bloqueada' " +
+                "        WHEN c.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' " +
+                "        WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
                 "        ELSE 'Activa' " +
                 "    END AS estado, " +
                 "    CASE " +
@@ -648,9 +666,7 @@ public class ListadoTarjetas {
                 "            cbt.currencyid " +
                 "    ) cb ON cb.creditlineid = cl.creditlineid " +
                 "    AND cb.currencyid = cl.currencycreditlimit " +
-                "WHERE c.closedind = 'F' " +
-                "    AND c.riskconditionind = 'F' " +
-                "    AND c.lostcardind = 'F' " +
+                "WHERE c.closedind = 'F' "+
                 "    AND cu.identificationnumber IN( ? , ? ) ";
         List<Tarjetas> tarjetasList = new ArrayList<>();
         ConnectionHandler connectionHandler = new ConnectionHandler();
@@ -751,8 +767,12 @@ public class ListadoTarjetas {
                         tarjeta.setTipoTarjeta(tarjetas.getTipoTarjeta());
                         tarjeta.setNombreTH(tarjetas.getNombreTH());
                         tarjeta.setEstado(tarjetas.getEstadoTarjeta());
-                        tarjeta.setLimiteCreditoLocal(tarjetas.getLimiteCreditoLocal());
-                        tarjeta.setLimiteCreditoDolares(tarjetas.getLimiteCreditoInter());
+                        tarjeta.setLimiteCreditoLocal((!tarjetas.getLimiteCreditoLocal().equals("0.00"))
+                                ? tarjetas.getLimiteCreditoLocal()
+                                : cuentas.getLimiteCreditoLocal());
+                        tarjeta.setLimiteCreditoDolares((!tarjetas.getLimiteCreditoInter().equals("0.00"))
+                                ? tarjetas.getLimiteCreditoInter()
+                                :cuentas.getLimiteCreditoInter());
                         tarjeta.setSaldoLocal(cuentas.getSaldoLocal());
                         tarjeta.setSaldoDolares(cuentas.getSaldoInter());
                         tarjeta.setDisponibleLocal(tarjetas.getDispLocalTarjeta());
