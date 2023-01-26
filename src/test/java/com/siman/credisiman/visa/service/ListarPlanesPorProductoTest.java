@@ -7,13 +7,12 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class ListarPlanesPorProductoTest {
-    private static final String NS = "http://siman.com/SolicitudTrasladoCompraEnCuotas";
+    private static final String NS = "http://siman.com/ListarPlanesPorProducto";
 
     @Test
-    public void obtenerConsultaMovimientosPrivadaGTOk() {
-        XmlObject result = SolicitudTrasladoCompraEnCuotas.obtenerSolicitudTrasladoCompraEnCuotas("SV","123456",
-                "6008324000363591", "carlos_penate@siman.com", "22228888","01","89","18.2",
-                "20220117","02", "jdbc/SUNTSTGT", "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion",
+    public void obtenerListarPlanesPorProductoOk() {
+        XmlObject result = ListarPlanesPorProducto.obtenerListarPlanesPorProducto("SV","45738400",
+                "jdbc/SUNTSTGT", "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion",
                 "usuario", "600831, 600831, 600831");
 
         //Status

@@ -1,6 +1,9 @@
 package com.siman.credisiman.visa.service;
 
+
+
 import com.siman.credisiman.visa.dto.planes.Sucursal;
+import com.siman.credisiman.visa.utils.ConnectionHandler;
 import com.siman.credisiman.visa.utils.Message;
 import com.siman.credisiman.visa.utils.Utils;
 import org.apache.xmlbeans.XmlCursor;
@@ -9,6 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.QName;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,11 +24,11 @@ public class ListadoSucursales {
     private static final String operationResponse = "ObtenerListadoSucursalesResponse";
 
     public static XmlObject obtenerListadoSucursales(String pais, String remoteJndiSunnel, String remoteJndiOrion,
-                                                           String siscardUrl, String siscardUser, String binCredisiman) {
+                                                     String siscardUrl, String siscardUser, String binCredisiman) {
         //validar campos requeridos
         Utils utils = new Utils();
         Message message = new Message();
-        List<Sucursal> listadoPlanes = new ArrayList<>();
+        List<Sucursal> listadoSucursal = new ArrayList<>();
 
         if (utils.validateNotNull(pais) || utils.validateNotEmpty(pais)) {
             log.info("pais required");
@@ -38,23 +44,64 @@ public class ListadoSucursales {
         cursor.insertElementWithText(new QName(namespace, "status"), "SUCCESS");
         cursor.insertElementWithText(new QName(namespace, "statusMessage"), "Proceso exitoso");
 
-        Sucursal plan1 = new Sucursal("01", "Sucursal 1");
-        Sucursal plan2 = new Sucursal("02", "Sucursal 2");
-        Sucursal plan3 = new Sucursal("03", "Sucursal 3");
+        String query1 = "SELECT BRANCHOFFICEID, DESCRIPTION FROM ORIONREPOSV.T_CBRANCHOFFICES ";
 
-        listadoPlanes.add(plan1);
-        listadoPlanes.add(plan2);
-        listadoPlanes.add(plan3);
+        String query2 = "SELECT BRANCHOFFICEID, DESCRIPTION FROM ORIONREPOGT.T_CBRANCHOFFICES ";
 
-        for (int i = 0; i < listadoPlanes.size(); i++) {
-            cursor.beginElement(new QName(namespace, "sucursales"));
-            cursor.insertElementWithText(new QName(namespace, "codigoSucursal"), listadoPlanes.get(i).getCodigoSucursal());
-            cursor.insertElementWithText(new QName(namespace, "nombre"), listadoPlanes.get(i).getNombre());
+        String query3 = "SELECT BRANCHOFFICEID, DESCRIPTION FROM ORIONREPONI.T_CBRANCHOFFICES ";
+
+        String query4 = "SELECT BRANCHOFFICEID, DESCRIPTION FROM ORIONREPOCR.T_CBRANCHOFFICES ";
+
+        ConnectionHandler connectionHandler = new ConnectionHandler();
+        Connection conexion = connectionHandler.getConnection(remoteJndiOrion);
+
+        PreparedStatement sentencia = null;
+        try {
+            switch (pais){
+                case "SV":
+                    sentencia = conexion.prepareStatement(query1);
+                    break;
+                case "GT":
+                    sentencia = conexion.prepareStatement(query2);
+                    break;
+                case "NI":
+                    sentencia = conexion.prepareStatement(query3);
+                    break;
+                case "CR":
+                    sentencia = conexion.prepareStatement(query4);
+                    break;
+            }
+            ResultSet rs = sentencia.executeQuery();
+
+            while (rs.next()) {
+                Sucursal sucursal = new Sucursal();
+                sucursal.setCodigoSucursal(rs.getString("BRANCHOFFICEID"));
+                sucursal.setNombre(rs.getString("DESCRIPTION"));
+                listadoSucursal.add(sucursal);
+            }
+
+            conexion.close();
+        }catch (Exception e){
+            e.printStackTrace();
+            return message.genericMessage("ERROR", "600",
+                    "Error general contacte al administrador del sistema...", namespace, operationResponse);
+        }
+        if(listadoSucursal.size() >0){
+            for (int i = 0; i < listadoSucursal.size(); i++) {
+                cursor.beginElement(new QName(namespace, "sucursales"));
+                cursor.insertElementWithText(new QName(namespace, "codigoSucursal"), listadoSucursal.get(i).getCodigoSucursal());
+                cursor.insertElementWithText(new QName(namespace, "nombre"), listadoSucursal.get(i).getNombre());
+                cursor.toParent();
+            }
+
             cursor.toParent();
+            log.info("response = [" + result + "]");
+            return result;
+        }else{
+            return message.genericMessage("ERROR", "400",
+                    "No se encontraron sucursales disponibles", namespace, operationResponse);
+
         }
 
-        cursor.toParent();
-        log.info("response = [" + result + "]");
-        return result;
     }
 }
