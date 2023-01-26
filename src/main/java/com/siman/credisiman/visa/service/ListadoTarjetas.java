@@ -84,6 +84,7 @@ public class ListadoTarjetas {
             nul.printStackTrace();
             return message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse);
         } catch (Exception ex) {
+            ex.printStackTrace();
             log.info("ObtenerListadoTarjetas response = [" + message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse) + "]");
             return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);
         }
@@ -267,7 +268,62 @@ public class ListadoTarjetas {
                 "    ) cb ON cb.creditlineid = cl.creditlineid " +
                 "    AND cb.currencyid = cl.currencycreditlimit " +
                 "WHERE c.closedind = 'F' " +
-                "    AND cu.identificationnumber IN( ? , ? ) ";//TODO obtener query arca
+                "    AND cu.identificationnumber IN( ? , ? )" +
+                " UNION " +
+                " SELECT  " +
+                " c_a.cardid AS numeroTarjeta, " +
+                " cl.creditlineid AS cuenta, " +
+                " DECODE(c_a.CARDTYPE, 'M', 'TITULAR', 'P', 'TITULAR', 'A', 'ADICIONAL') AS tipoTarjeta, " +
+                " cu_a.aliasname AS nombreTH, " +
+                " CASE WHEN (cl.blockedind = 'T' OR c_a.lostcardind = 'T' OR cl.uncollectableind = 'T') THEN 'Bloqueada' WHEN c_a.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' WHEN cl.overlimitind = 'T' THEN 'Sobregirada' ELSE 'Activa' END AS estado, " +
+                " CASE WHEN cl.currencycreditlimit <> 840 THEN cl.creditlimit ELSE 0 END AS limiteCreditoLocal, " +
+                " CASE WHEN cl.currencycreditlimit = 840 THEN cl.creditlimit ELSE 0 END AS limiteCreditoDolares, " +
+                " CASE WHEN fb.currencyid <> 840 THEN CASE WHEN NVL(fb.saldo, 0) = 0 AND NVL(cb.saldoAFavor, 0) > 0 THEN (cb.saldoAFavor * -1) ELSE NVL(fb.saldo, 0) END ELSE 0 END AS saldoLocal, " +
+                " CASE WHEN fb.currencyid = 840 THEN CASE WHEN NVL(fb.saldo, 0) = 0 AND NVL(cb.saldoAFavor, 0) > 0 THEN (cb.saldoAFavor * -1) ELSE NVL(fb.saldo, 0) END ELSE 0 END AS saldoDolares, " +
+                " CASE WHEN clp.currencycreditlimit <> 840 THEN clp.availablebalance ELSE 0 END AS disponibleLocal, " +
+                " CASE WHEN clp.currencycreditlimit = 840 THEN clp.availablebalance ELSE 0 END AS disponibleDolares, " +
+                " CASE WHEN fb.currencyid <> 840 THEN fb.pagoMinimo ELSE 0 END AS pagoMinimoLocal, " +
+                " CASE WHEN fb.currencyid = 840 THEN fb.pagoMinimo ELSE 0 END AS pagoMinimoDolares, " +
+                " CASE WHEN fb.currencyid <> 840 THEN fb.capitalVencido ELSE 0 END AS pagoMinimoVencidoLocal, " +
+                " CASE WHEN fb.currencyid = 840 THEN fb.capitalVencido ELSE 0 END AS pagoMinimoVencidoDolares, " +
+                " CASE WHEN fb.currencyid <> 840 THEN fb.pagoContado ELSE 0 END AS pagoContadoLocal, " +
+                " CASE WHEN fb.currencyid = 840 THEN fb.pagoContado ELSE 0 END AS pagoContadoDolares, " +
+                " TO_CHAR(bp.fechaPago,'YYYYMMDD') AS fechaPago, " +
+                " TO_CHAR(cl.lastinterestaccruingdate,'YYYYMMDD') AS fechaUltimoCorte, " +
+                " ' ' AS saldoMonedero, " +
+                " ' ' AS rombosAcumulados, " +
+                " ' ' AS rombosDinero, " +
+                " ' ' AS fondosReservados " +
+                " FROM SUNNELP3.t_gcard c " +
+                " INNER JOIN SUNNELP3.t_gcustomer cu ON cu.customerid = c.customerid " +
+                "INNER JOIN SUNNELP3.t_gadditionalcard ac ON ac.cardid = c.cardid " +
+                "INNER JOIN SUNNELP3.t_gcard c_a ON ac.additionalcardid = c_a.cardid " +
+                "INNER JOIN SUNNELP3.t_gcustomer cu_a ON cu_a.customerid = c_a.customerid " +
+                "INNER JOIN SUNNELP3.t_gaccount a ON a.cardid = c.cardid " +
+                "INNER JOIN SUNNELP3.t_gcreditline cl ON cl.creditlineid = a.accountid " +
+                "INNER JOIN SUNNELP3.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid AND clp.creditlinepartitiontypeid <> 356 " +
+                "LEFT OUTER JOIN (SELECT clt.creditlineid, MAX(bpt.paymentdate) AS fechaPago " +
+                "                FROM SUNNELP3.t_gbillingperiod bpt " +
+                "                INNER JOIN SUNNELP3.t_gcreditline clt ON clt.billingcycleid = bpt.billingcycleid AND clt.lastinterestaccruingdate = bpt.billingdate " +
+                "                GROUP BY clt.creditlineid) bp ON bp.creditlineid = cl.creditlineid " +
+                "LEFT OUTER JOIN (SELECT fbt.creditlineid, fbt.currencyid, " +
+                "                SUM(fbt.regularbalance + fbt.periodamountdue + fbt.regularinterest + fbt.regularinteresttax + fbt.overduebalance + fbt.overdueinterest + fbt.overdueinteresttax + fbt.contingentinterest) AS saldo, " +
+                "                SUM(fbt.periodamountdue + fbt.regularinterest + fbt.regularinteresttax + fbt.overduebalance + fbt.overdueinterest + fbt.overdueinteresttax + fbt.contingentinterest) AS pagoMinimo, " +
+                "                SUM(fbt.regularbalance + fbt.periodamountdue + fbt.regularinterest + fbt.regularinteresttax + fbt.overduebalance + fbt.overdueinterest + fbt.overdueinteresttax + fbt.contingentinterest) AS pagoContado, " +
+                "                SUM(fbt.regularbalance) AS capitalNoExigible, " +
+                "                SUM(fbt.periodamountdue) AS capitalExigible, " +
+                "                SUM(fbt.overduebalance) AS capitalVencido, " +
+                "                SUM(regularinterest + fbt.regularinteresttax) AS interesCorriente, " +
+                "                SUM(fbt.overdueinterest + fbt.overdueinteresttax) AS interesMoratorio, " +
+                "                SUM(fbt.contingentinterest) AS interesContigente " +
+                "                FROM SUNNELP3.t_gfinancingbalance fbt " +
+                "                GROUP BY fbt.creditlineid, fbt.currencyid) fb ON fb.creditlineid = cl.creditlineid AND fb.currencyid = cl.currencycreditlimit " +
+                "LEFT OUTER JOIN (SELECT cbt.creditlineid, cbt.currencyid,  " +
+                "                SUM(cbt.amountinexcess) AS saldoAFavor " +
+                "                FROM SUNNELP3.t_gcreditbalance cbt " +
+                "                GROUP BY cbt.creditlineid, cbt.currencyid) cb ON cb.creditlineid = cl.creditlineid AND cb.currencyid = cl.currencycreditlimit " +
+                "WHERE c.closedind = 'F' " +
+                "AND cu.identificationnumber IN(?,?) ";//TODO obtener query arca
 
 
         String query2 = "SELECT c.cardid AS numeroTarjeta, " +
@@ -401,7 +457,142 @@ public class ListadoTarjetas {
                 "    ) cb ON cb.creditlineid = cl.creditlineid " +
                 "    AND cb.currencyid = cl.currencycreditlimit " +
                 "WHERE c.closedind = 'F' " +
-                "    AND cu.identificationnumber IN( ? , ? ) ";
+                "    AND cu.identificationnumber IN( ? , ? ) " +
+                " UNION " +
+                " SELECT c_a.cardid AS numeroTarjeta, " +
+                "    cl.creditlineid AS cuenta, " +
+                "    DECODE( " +
+                "        c_a.CARDTYPE, " +
+                "        'M', " +
+                "        'TITULAR', " +
+                "        'P', " +
+                "        'TITULAR', " +
+                "        'A', " +
+                "        'ADICIONAL' " +
+                "    ) AS tipoTarjeta, " +
+                "    cu_a.aliasname AS nombreTH, " +
+                "    CASE " +
+                "        WHEN ( " +
+                "            cl.blockedind = 'T' " +
+                "            OR c_a.lostcardind = 'T' " +
+                "            OR cl.uncollectableind = 'T' " +
+                "        ) THEN 'Bloqueada' " +
+                "        WHEN c_a.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' " +
+                "        WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
+                "        ELSE 'Activa' " +
+                "    END AS estado, " +
+                "    CASE " +
+                "        WHEN cl.currencycreditlimit <> 840 THEN cl.creditlimit " +
+                "        ELSE 0 " +
+                "    END AS limiteCreditoLocal, " +
+                "    CASE " +
+                "        WHEN cl.currencycreditlimit = 840 THEN cl.creditlimit " +
+                "        ELSE 0 " +
+                "    END AS limiteCreditoDolares, " +
+                "    CASE " +
+                "        WHEN fb.currencyid <> 840 THEN CASE " +
+                "            WHEN NVL(fb.saldo, 0) = 0 " +
+                "            AND NVL(cb.saldoAFavor, 0) > 0 THEN (cb.saldoAFavor * -1) " +
+                "            ELSE NVL(fb.saldo, 0) " +
+                "        END " +
+                "        ELSE 0 " +
+                "    END AS saldoLocal, " +
+                "    CASE " +
+                "        WHEN fb.currencyid = 840 THEN CASE " +
+                "            WHEN NVL(fb.saldo, 0) = 0 " +
+                "            AND NVL(cb.saldoAFavor, 0) > 0 THEN (cb.saldoAFavor * -1) " +
+                "            ELSE NVL(fb.saldo, 0) " +
+                "        END " +
+                "        ELSE 0 " +
+                "    END AS saldoDolares, " +
+                "    CASE " +
+                "        WHEN clp.currencycreditlimit <> 840 THEN clp.availablebalance " +
+                "        ELSE 0 " +
+                "    END AS disponibleLocal, " +
+                "    CASE " +
+                "        WHEN clp.currencycreditlimit = 840 THEN clp.availablebalance " +
+                "        ELSE 0 " +
+                "    END AS disponibleDolares, " +
+                "    CASE " +
+                "        WHEN fb.currencyid <> 840 THEN fb.pagoMinimo " +
+                "        ELSE 0 " +
+                "    END AS pagoMinimoLocal, " +
+                "    CASE " +
+                "        WHEN fb.currencyid = 840 THEN fb.pagoMinimo " +
+                "        ELSE 0 " +
+                "    END AS pagoMinimoDolares, " +
+                "    CASE " +
+                "        WHEN fb.currencyid <> 840 THEN fb.capitalVencido " +
+                "        ELSE 0 " +
+                "    END AS pagoMinimoVencidoLocal, " +
+                "    CASE " +
+                "        WHEN fb.currencyid = 840 THEN fb.capitalVencido " +
+                "        ELSE 0 " +
+                "    END AS pagoMinimoVencidoDolares, " +
+                "    CASE " +
+                "        WHEN fb.currencyid <> 840 THEN fb.pagoContado " +
+                "        ELSE 0 " +
+                "    END AS pagoContadoLocal, " +
+                "    CASE " +
+                "        WHEN fb.currencyid = 840 THEN fb.pagoContado " +
+                "        ELSE 0 " +
+                "    END AS pagoContadoDolares, " +
+                "    TO_CHAR(bp.fechaPago, 'YYYYMMDD') AS fechaPago, TO_CHAR(cl.lastinterestaccruingdate,'YYYYMMDD') AS fechaUltimoCorte, " +
+                "    ' ' AS saldoMonedero, " +
+                "    ' ' AS rombosAcumulados, " +
+                "    ' ' AS rombosDinero, " +
+                "    ' ' AS fondosReservados " +
+                "FROM SUNNELGTP4.t_gcard c " +
+                "    INNER JOIN SUNNELGTP4.t_gcustomer cu ON cu.customerid = c.customerid " +
+                "    INNER JOIN SUNNELGTP4.t_gadditionalcard ac ON ac.cardid = c.cardid " +
+                "    INNER JOIN SUNNELGTP4.t_gcard c_a ON ac.additionalcardid = c_a.cardid " +
+                "    INNER JOIN SUNNELGTP4.t_gcustomer cu_a ON cu_a.customerid = c_a.customerid " +
+                "    INNER JOIN SUNNELGTP4.t_gaccount a ON a.cardid = c.cardid " +
+                "    INNER JOIN SUNNELGTP4.t_gcreditline cl ON cl.creditlineid = a.accountid " +
+                "    INNER JOIN SUNNELGTP4.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
+                "    AND clp.creditlinepartitiontypeid <> 356 " +
+                "    LEFT OUTER JOIN ( " +
+                "        SELECT clt.creditlineid, " +
+                "            MAX(bpt.paymentdate) AS fechaPago " +
+                "        FROM SUNNELGTP4.t_gbillingperiod bpt " +
+                "            INNER JOIN SUNNELGTP4.t_gcreditline clt ON clt.billingcycleid = bpt.billingcycleid " +
+                "            AND clt.lastinterestaccruingdate = bpt.billingdate " +
+                "        GROUP BY clt.creditlineid " +
+                "    ) bp ON bp.creditlineid = cl.creditlineid " +
+                "    LEFT OUTER JOIN ( " +
+                "        SELECT fbt.creditlineid, " +
+                "            fbt.currencyid, " +
+                "            SUM( " +
+                "                fbt.regularbalance + fbt.periodamountdue + fbt.regularinterest + fbt.regularinteresttax + fbt.overduebalance + fbt.overdueinterest + fbt.overdueinteresttax + fbt.contingentinterest " +
+                "            ) AS saldo, " +
+                "            SUM( " +
+                "                fbt.periodamountdue + fbt.regularinterest + fbt.regularinteresttax + fbt.overduebalance + fbt.overdueinterest + fbt.overdueinteresttax + fbt.contingentinterest " +
+                "            ) AS pagoMinimo, " +
+                "            SUM( " +
+                "                fbt.regularbalance + fbt.periodamountdue + fbt.regularinterest + fbt.regularinteresttax + fbt.overduebalance + fbt.overdueinterest + fbt.overdueinteresttax + fbt.contingentinterest " +
+                "            ) AS pagoContado, " +
+                "            SUM(fbt.regularbalance) AS capitalNoExigible, " +
+                "            SUM(fbt.periodamountdue) AS capitalExigible, " +
+                "            SUM(fbt.overduebalance) AS capitalVencido, " +
+                "            SUM(regularinterest + fbt.regularinteresttax) AS interesCorriente, " +
+                "            SUM(fbt.overdueinterest + fbt.overdueinteresttax) AS interesMoratorio, " +
+                "            SUM(fbt.contingentinterest) AS interesContigente " +
+                "        FROM SUNNELGTP4.t_gfinancingbalance fbt " +
+                "        GROUP BY fbt.creditlineid, " +
+                "            fbt.currencyid " +
+                "    ) fb ON fb.creditlineid = cl.creditlineid " +
+                "    AND fb.currencyid = cl.currencycreditlimit " +
+                "    LEFT OUTER JOIN ( " +
+                "        SELECT cbt.creditlineid, " +
+                "            cbt.currencyid, " +
+                "            SUM(cbt.amountinexcess) AS saldoAFavor " +
+                "        FROM SUNNELGTP4.t_gcreditbalance cbt " +
+                "        GROUP BY cbt.creditlineid, " +
+                "            cbt.currencyid " +
+                "    ) cb ON cb.creditlineid = cl.creditlineid " +
+                "    AND cb.currencyid = cl.currencycreditlimit " +
+                "WHERE c.closedind = 'F' " +
+                "    AND cu.identificationnumber IN(?, ?)  ";
 
         String query3 = " SELECT c.cardid AS numeroTarjeta, " +
                 "    cl.creditlineid AS cuenta, " +
@@ -534,7 +725,62 @@ public class ListadoTarjetas {
                 "    ) cb ON cb.creditlineid = cl.creditlineid " +
                 "    AND cb.currencyid = cl.currencycreditlimit " +
                 "WHERE c.closedind = 'F' " +
-                "    AND cu.identificationnumber IN( ? , ? ) ";
+                "    AND cu.identificationnumber IN( ? , ? ) " +
+                " UNION " +
+                " SELECT  " +
+                " c_a.cardid AS numeroTarjeta, " +
+                " cl.creditlineid AS cuenta, " +
+                " DECODE(c_a.CARDTYPE, 'M', 'TITULAR', 'P', 'TITULAR', 'A', 'ADICIONAL') AS tipoTarjeta, " +
+                " cu_a.aliasname AS nombreTH, " +
+                " CASE WHEN (cl.blockedind = 'T' OR c_a.lostcardind = 'T' OR cl.uncollectableind = 'T') THEN 'Bloqueada' WHEN c_a.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' WHEN cl.overlimitind = 'T' THEN 'Sobregirada' ELSE 'Activa' END AS estado, " +
+                " CASE WHEN cl.currencycreditlimit <> 840 THEN cl.creditlimit ELSE 0 END AS limiteCreditoLocal, " +
+                " CASE WHEN cl.currencycreditlimit = 840 THEN cl.creditlimit ELSE 0 END AS limiteCreditoDolares, " +
+                " CASE WHEN fb.currencyid <> 840 THEN CASE WHEN NVL(fb.saldo, 0) = 0 AND NVL(cb.saldoAFavor, 0) > 0 THEN (cb.saldoAFavor * -1) ELSE NVL(fb.saldo, 0) END ELSE 0 END AS saldoLocal, " +
+                " CASE WHEN fb.currencyid = 840 THEN CASE WHEN NVL(fb.saldo, 0) = 0 AND NVL(cb.saldoAFavor, 0) > 0 THEN (cb.saldoAFavor * -1) ELSE NVL(fb.saldo, 0) END ELSE 0 END AS saldoDolares, " +
+                " CASE WHEN clp.currencycreditlimit <> 840 THEN clp.availablebalance ELSE 0 END AS disponibleLocal, " +
+                " CASE WHEN clp.currencycreditlimit = 840 THEN clp.availablebalance ELSE 0 END AS disponibleDolares, " +
+                " CASE WHEN fb.currencyid <> 840 THEN fb.pagoMinimo ELSE 0 END AS pagoMinimoLocal, " +
+                " CASE WHEN fb.currencyid = 840 THEN fb.pagoMinimo ELSE 0 END AS pagoMinimoDolares, " +
+                " CASE WHEN fb.currencyid <> 840 THEN fb.capitalVencido ELSE 0 END AS pagoMinimoVencidoLocal, " +
+                " CASE WHEN fb.currencyid = 840 THEN fb.capitalVencido ELSE 0 END AS pagoMinimoVencidoDolares, " +
+                " CASE WHEN fb.currencyid <> 840 THEN fb.pagoContado ELSE 0 END AS pagoContadoLocal, " +
+                " CASE WHEN fb.currencyid = 840 THEN fb.pagoContado ELSE 0 END AS pagoContadoDolares, " +
+                " TO_CHAR(bp.fechaPago,'YYYYMMDD') AS fechaPago, " +
+                " TO_CHAR(cl.lastinterestaccruingdate,'YYYYMMDD') AS fechaUltimoCorte, " +
+                " ' ' AS saldoMonedero, " +
+                " ' ' AS rombosAcumulados, " +
+                " ' ' AS rombosDinero, " +
+                " ' ' AS fondosReservados " +
+                " FROM SUNNELNIP1.t_gcard c " +
+                " INNER JOIN SUNNELNIP1.t_gcustomer cu ON cu.customerid = c.customerid " +
+                " INNER JOIN SUNNELNIP1.t_gadditionalcard ac ON ac.cardid = c.cardid " +
+                " INNER JOIN SUNNELNIP1.t_gcard c_a ON ac.additionalcardid = c_a.cardid " +
+                " INNER JOIN SUNNELNIP1.t_gcustomer cu_a ON cu_a.customerid = c_a.customerid " +
+                " INNER JOIN SUNNELNIP1.t_gaccount a ON a.cardid = c.cardid " +
+                " INNER JOIN SUNNELNIP1.t_gcreditline cl ON cl.creditlineid = a.accountid " +
+                " INNER JOIN SUNNELNIP1.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid AND clp.creditlinepartitiontypeid <> 356 " +
+                " LEFT OUTER JOIN (SELECT clt.creditlineid, MAX(bpt.paymentdate) AS fechaPago " +
+                "                FROM SUNNELNIP1.t_gbillingperiod bpt " +
+                "                INNER JOIN SUNNELNIP1.t_gcreditline clt ON clt.billingcycleid = bpt.billingcycleid AND clt.lastinterestaccruingdate = bpt.billingdate " +
+                "                GROUP BY clt.creditlineid) bp ON bp.creditlineid = cl.creditlineid " +
+                " LEFT OUTER JOIN (SELECT fbt.creditlineid, fbt.currencyid, " +
+                "                SUM(fbt.regularbalance + fbt.periodamountdue + fbt.regularinterest + fbt.regularinteresttax + fbt.overduebalance + fbt.overdueinterest + fbt.overdueinteresttax + fbt.contingentinterest) AS saldo, " +
+                "                SUM(fbt.periodamountdue + fbt.regularinterest + fbt.regularinteresttax + fbt.overduebalance + fbt.overdueinterest + fbt.overdueinteresttax + fbt.contingentinterest) AS pagoMinimo, " +
+                "                SUM(fbt.regularbalance + fbt.periodamountdue + fbt.regularinterest + fbt.regularinteresttax + fbt.overduebalance + fbt.overdueinterest + fbt.overdueinteresttax + fbt.contingentinterest) AS pagoContado, " +
+                "                SUM(fbt.regularbalance) AS capitalNoExigible, " +
+                "                SUM(fbt.periodamountdue) AS capitalExigible, " +
+                "                SUM(fbt.overduebalance) AS capitalVencido, " +
+                "                SUM(regularinterest + fbt.regularinteresttax) AS interesCorriente, " +
+                "                SUM(fbt.overdueinterest + fbt.overdueinteresttax) AS interesMoratorio, " +
+                "                SUM(fbt.contingentinterest) AS interesContigente " +
+                "                FROM SUNNELNIP1.t_gfinancingbalance fbt " +
+                "                GROUP BY fbt.creditlineid, fbt.currencyid) fb ON fb.creditlineid = cl.creditlineid AND fb.currencyid = cl.currencycreditlimit " +
+                " LEFT OUTER JOIN (SELECT cbt.creditlineid, cbt.currencyid,  " +
+                "                SUM(cbt.amountinexcess) AS saldoAFavor " +
+                "                FROM SUNNELNIP1.t_gcreditbalance cbt " +
+                "                GROUP BY cbt.creditlineid, cbt.currencyid) cb ON cb.creditlineid = cl.creditlineid AND cb.currencyid = cl.currencycreditlimit " +
+                " WHERE c.closedind = 'F' " +
+                " AND cu.identificationnumber IN(?, ?)  ";
 
         String query4 = " SELECT c.cardid AS numeroTarjeta, " +
                 "    cl.creditlineid AS cuenta, " +
@@ -666,8 +912,63 @@ public class ListadoTarjetas {
                 "            cbt.currencyid " +
                 "    ) cb ON cb.creditlineid = cl.creditlineid " +
                 "    AND cb.currencyid = cl.currencycreditlimit " +
-                "WHERE c.closedind = 'F' "+
-                "    AND cu.identificationnumber IN( ? , ? ) ";
+                " WHERE c.closedind = 'F' "+
+                "    AND cu.identificationnumber IN( ? , ? ) " +
+                " UNION " +
+                " SELECT  " +
+                " c_a.cardid AS numeroTarjeta, " +
+                " cl.creditlineid AS cuenta, " +
+                " DECODE(c_a.CARDTYPE, 'M', 'TITULAR', 'P', 'TITULAR', 'A', 'ADICIONAL') AS tipoTarjeta, " +
+                " cu_a.aliasname AS nombreTH, " +
+                " CASE WHEN (cl.blockedind = 'T' OR c_a.lostcardind = 'T' OR cl.uncollectableind = 'T') THEN 'Bloqueada' WHEN c_a.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' WHEN cl.overlimitind = 'T' THEN 'Sobregirada' ELSE 'Activa' END AS estado, " +
+                " CASE WHEN cl.currencycreditlimit <> 840 THEN cl.creditlimit ELSE 0 END AS limiteCreditoLocal, " +
+                " CASE WHEN cl.currencycreditlimit = 840 THEN cl.creditlimit ELSE 0 END AS limiteCreditoDolares, " +
+                " CASE WHEN fb.currencyid <> 840 THEN CASE WHEN NVL(fb.saldo, 0) = 0 AND NVL(cb.saldoAFavor, 0) > 0 THEN (cb.saldoAFavor * -1) ELSE NVL(fb.saldo, 0) END ELSE 0 END AS saldoLocal, " +
+                " CASE WHEN fb.currencyid = 840 THEN CASE WHEN NVL(fb.saldo, 0) = 0 AND NVL(cb.saldoAFavor, 0) > 0 THEN (cb.saldoAFavor * -1) ELSE NVL(fb.saldo, 0) END ELSE 0 END AS saldoDolares, " +
+                " CASE WHEN clp.currencycreditlimit <> 840 THEN clp.availablebalance ELSE 0 END AS disponibleLocal, " +
+                " CASE WHEN clp.currencycreditlimit = 840 THEN clp.availablebalance ELSE 0 END AS disponibleDolares, " +
+                " CASE WHEN fb.currencyid <> 840 THEN fb.pagoMinimo ELSE 0 END AS pagoMinimoLocal, " +
+                " CASE WHEN fb.currencyid = 840 THEN fb.pagoMinimo ELSE 0 END AS pagoMinimoDolares, " +
+                " CASE WHEN fb.currencyid <> 840 THEN fb.capitalVencido ELSE 0 END AS pagoMinimoVencidoLocal, " +
+                " CASE WHEN fb.currencyid = 840 THEN fb.capitalVencido ELSE 0 END AS pagoMinimoVencidoDolares, " +
+                " CASE WHEN fb.currencyid <> 840 THEN fb.pagoContado ELSE 0 END AS pagoContadoLocal, " +
+                " CASE WHEN fb.currencyid = 840 THEN fb.pagoContado ELSE 0 END AS pagoContadoDolares, " +
+                " TO_CHAR(bp.fechaPago,'YYYYMMDD') AS fechaPago, " +
+                " TO_CHAR(cl.lastinterestaccruingdate,'YYYYMMDD') AS fechaUltimoCorte, " +
+                " ' ' AS saldoMonedero, " +
+                " ' ' AS rombosAcumulados, " +
+                " ' ' AS rombosDinero, " +
+                " ' ' AS fondosReservados " +
+                " FROM SUNNELCRP4.t_gcard c " +
+                " INNER JOIN SUNNELCRP4.t_gcustomer cu ON cu.customerid = c.customerid " +
+                " INNER JOIN SUNNELCRP4.t_gadditionalcard ac ON ac.cardid = c.cardid " +
+                " INNER JOIN SUNNELCRP4.t_gcard c_a ON ac.additionalcardid = c_a.cardid " +
+                " INNER JOIN SUNNELCRP4.t_gcustomer cu_a ON cu_a.customerid = c_a.customerid " +
+                " INNER JOIN SUNNELCRP4.t_gaccount a ON a.cardid = c.cardid " +
+                " INNER JOIN SUNNELCRP4.t_gcreditline cl ON cl.creditlineid = a.accountid " +
+                " INNER JOIN SUNNELCRP4.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid AND clp.creditlinepartitiontypeid <> 356 " +
+                " LEFT OUTER JOIN (SELECT clt.creditlineid, MAX(bpt.paymentdate) AS fechaPago " +
+                "                FROM SUNNELCRP4.t_gbillingperiod bpt " +
+                "                INNER JOIN SUNNELCRP4.t_gcreditline clt ON clt.billingcycleid = bpt.billingcycleid AND clt.lastinterestaccruingdate = bpt.billingdate " +
+                "                GROUP BY clt.creditlineid) bp ON bp.creditlineid = cl.creditlineid " +
+                " LEFT OUTER JOIN (SELECT fbt.creditlineid, fbt.currencyid, " +
+                "                SUM(fbt.regularbalance + fbt.periodamountdue + fbt.regularinterest + fbt.regularinteresttax + fbt.overduebalance + fbt.overdueinterest + fbt.overdueinteresttax + fbt.contingentinterest) AS saldo, " +
+                "                SUM(fbt.periodamountdue + fbt.regularinterest + fbt.regularinteresttax + fbt.overduebalance + fbt.overdueinterest + fbt.overdueinteresttax + fbt.contingentinterest) AS pagoMinimo, " +
+                "                SUM(fbt.regularbalance + fbt.periodamountdue + fbt.regularinterest + fbt.regularinteresttax + fbt.overduebalance + fbt.overdueinterest + fbt.overdueinteresttax + fbt.contingentinterest) AS pagoContado, " +
+                "                SUM(fbt.regularbalance) AS capitalNoExigible, " +
+                "                SUM(fbt.periodamountdue) AS capitalExigible, " +
+                "                SUM(fbt.overduebalance) AS capitalVencido, " +
+                "                SUM(regularinterest + fbt.regularinteresttax) AS interesCorriente, " +
+                "                SUM(fbt.overdueinterest + fbt.overdueinteresttax) AS interesMoratorio, " +
+                "                SUM(fbt.contingentinterest) AS interesContigente " +
+                "                FROM SUNNELCRP4.t_gfinancingbalance fbt " +
+                "                GROUP BY fbt.creditlineid, fbt.currencyid) fb ON fb.creditlineid = cl.creditlineid AND fb.currencyid = cl.currencycreditlimit " +
+                " LEFT OUTER JOIN (SELECT cbt.creditlineid, cbt.currencyid,  " +
+                "                SUM(cbt.amountinexcess) AS saldoAFavor " +
+                "                FROM SUNNELCRP4.t_gcreditbalance cbt " +
+                "                GROUP BY cbt.creditlineid, cbt.currencyid) cb ON cb.creditlineid = cl.creditlineid AND cb.currencyid = cl.currencycreditlimit " +
+                " WHERE c.closedind = 'F' " +
+                " AND cu.identificationnumber IN(?,?) ";
         List<Tarjetas> tarjetasList = new ArrayList<>();
         ConnectionHandler connectionHandler = new ConnectionHandler();
         Connection conexion = connectionHandler.getConnection(remoteJndiSunnel);
@@ -692,6 +993,8 @@ public class ListadoTarjetas {
         String identificacionFormater = identificacion.replace("-", "").replace("_", "").replace(" ", "");
         sentencia.setString(1, identificacion); //TODO agregar parametros
         sentencia.setString(2, identificacionFormater);
+        sentencia.setString(3, identificacion); //TODO agregar parametros
+        sentencia.setString(4, identificacionFormater);
         ResultSet rs = sentencia.executeQuery();
         int counter = 0;
 

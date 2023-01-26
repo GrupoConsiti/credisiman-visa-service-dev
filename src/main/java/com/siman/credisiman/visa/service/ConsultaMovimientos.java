@@ -135,7 +135,7 @@ public class ConsultaMovimientos {
                 "                 INNER JOIN SUNNELP3.t_goperationtype ot " +
                 "                    ON ot.operationtypeid = co.operationtypeid " +
                 "                 INNER JOIN SUNNELP3.t_gcardaccount ca " +
-                "                    ON ca.accountid = co.creditlineid " +
+                "                    ON ca.accountid = co.creditlineid AND ca.cardid = co.cardid " +
                 "                 INNER JOIN SUNNELP3.t_gbranch b " +
                 "                    ON b.branchid = co.branchid " +
                 "           WHERE     ca.cardid = ? " +
@@ -160,7 +160,7 @@ public class ConsultaMovimientos {
                 "                    ON     pu.debitoperationid = do.debitoperationid " +
                 "                       AND pu.creditlineid = do.creditlineid " +
                 "                 INNER JOIN SUNNELP3.t_gcardaccount ca " +
-                "                    ON ca.accountid = do.creditlineid " +
+                "                    ON ca.accountid = do.creditlineid AND ca.cardid = do.cardid " +
                 "                 INNER JOIN SUNNELP3.t_gbranch b " +
                 "                    ON b.branchid = do.branchid " +
                 "           WHERE     ca.cardid = ? " +
@@ -183,7 +183,7 @@ public class ConsultaMovimientos {
                 "                    ON     co.creditlineid = cro.creditlineid " +
                 "                       AND co.creditoperationid = cro.creditoperationid " +
                 "                 INNER JOIN SUNNELP3.t_gcardaccount ca " +
-                "                    ON ca.accountid = cro.creditlineid " +
+                "                    ON ca.accountid = cro.creditlineid AND ca.cardid = co.cardid " +
                 "                 INNER JOIN SUNNELP3.t_gbranch b " +
                 "                    ON b.branchid = cro.branchid " +
                 "           WHERE     ca.cardid = ? " +
@@ -206,7 +206,7 @@ public class ConsultaMovimientos {
                 "                    ON     do.creditlineid = rdo.creditlineid " +
                 "                       AND do.debitoperationid = rdo.debitoperationid " +
                 "                 INNER JOIN SUNNELP3.t_gcardaccount ca " +
-                "                    ON ca.accountid = rdo.creditlineid " +
+                "                    ON ca.accountid = rdo.creditlineid AND ca.cardid = do.cardid " +
                 "                 INNER JOIN SUNNELP3.t_gbranch b " +
                 "                    ON b.branchid = rdo.branchid " +
                 "           WHERE     ca.cardid = ? " +
@@ -230,7 +230,7 @@ public class ConsultaMovimientos {
                 "                                 INNER JOIN SUNNELGTP4.t_goperationtype ot  " +
                 "                                    ON ot.operationtypeid = co.operationtypeid  " +
                 "                                 INNER JOIN SUNNELGTP4.t_gcardaccount ca  " +
-                "                                    ON ca.accountid = co.creditlineid  " +
+                "                                    ON ca.accountid = co.creditlineid AND ca.cardid = co.cardid " +
                 "                                 INNER JOIN SUNNELGTP4.t_gbranch b  " +
                 "                                    ON b.branchid = co.branchid  " +
                 "                           WHERE     ca.cardid = ?  " +
@@ -255,7 +255,7 @@ public class ConsultaMovimientos {
                 "                                    ON     pu.debitoperationid = do.debitoperationid  " +
                 "                                       AND pu.creditlineid = do.creditlineid  " +
                 "                                 INNER JOIN SUNNELGTP4.t_gcardaccount ca  " +
-                "                                    ON ca.accountid = do.creditlineid  " +
+                "                                    ON ca.accountid = do.creditlineid AND ca.cardid = do.cardid " +
                 "                                 INNER JOIN SUNNELGTP4.t_gbranch b  " +
                 "                                    ON b.branchid = do.branchid  " +
                 "                           WHERE     ca.cardid = ?  " +
@@ -278,7 +278,7 @@ public class ConsultaMovimientos {
                 "                                    ON     co.creditlineid = cro.creditlineid  " +
                 "                                       AND co.creditoperationid = cro.creditoperationid  " +
                 "                                 INNER JOIN SUNNELGTP4.t_gcardaccount ca  " +
-                "                                    ON ca.accountid = cro.creditlineid  " +
+                "                                    ON ca.accountid = cro.creditlineid AND ca.cardid = co.cardid  " +
                 "                                 INNER JOIN SUNNELGTP4.t_gbranch b  " +
                 "                                    ON b.branchid = cro.branchid  " +
                 "                           WHERE     ca.cardid = ? " +
@@ -301,7 +301,7 @@ public class ConsultaMovimientos {
                 "                                    ON     do.creditlineid = rdo.creditlineid  " +
                 "                                       AND do.debitoperationid = rdo.debitoperationid  " +
                 "                                 INNER JOIN SUNNELGTP4.t_gcardaccount ca  " +
-                "                                    ON ca.accountid = rdo.creditlineid  " +
+                "                                    ON ca.accountid = rdo.creditlineid AND ca.cardid = do.cardid  " +
                 "                                 INNER JOIN SUNNELGTP4.t_gbranch b  " +
                 "                                    ON b.branchid = rdo.branchid  " +
                 "                           WHERE     ca.cardid = ?  " +
@@ -325,7 +325,7 @@ public class ConsultaMovimientos {
                 "                                 INNER JOIN SUNNELNIP1.t_goperationtype ot  " +
                 "                                    ON ot.operationtypeid = co.operationtypeid  " +
                 "                                 INNER JOIN SUNNELNIP1.t_gcardaccount ca  " +
-                "                                    ON ca.accountid = co.creditlineid  " +
+                "                                    ON ca.accountid = co.creditlineid AND ca.cardid = co.cardid " +
                 "                                 INNER JOIN SUNNELNIP1.t_gbranch b  " +
                 "                                    ON b.branchid = co.branchid  " +
                 "                           WHERE     ca.cardid = ?  " +
@@ -350,7 +350,7 @@ public class ConsultaMovimientos {
                 "                                    ON     pu.debitoperationid = do.debitoperationid  " +
                 "                                       AND pu.creditlineid = do.creditlineid  " +
                 "                                 INNER JOIN SUNNELNIP1.t_gcardaccount ca  " +
-                "                                    ON ca.accountid = do.creditlineid  " +
+                "                                    ON ca.accountid = do.creditlineid AND ca.cardid = do.cardid " +
                 "                                 INNER JOIN SUNNELNIP1.t_gbranch b  " +
                 "                                    ON b.branchid = do.branchid  " +
                 "                           WHERE     ca.cardid = ?  " +
@@ -373,7 +373,7 @@ public class ConsultaMovimientos {
                 "                                    ON     co.creditlineid = cro.creditlineid  " +
                 "                                       AND co.creditoperationid = cro.creditoperationid  " +
                 "                                 INNER JOIN SUNNELNIP1.t_gcardaccount ca  " +
-                "                                    ON ca.accountid = cro.creditlineid  " +
+                "                                    ON ca.accountid = cro.creditlineid AND ca.cardid = co.cardid  " +
                 "                                 INNER JOIN SUNNELNIP1.t_gbranch b  " +
                 "                                    ON b.branchid = cro.branchid  " +
                 "                           WHERE     ca.cardid = ? " +
@@ -396,7 +396,7 @@ public class ConsultaMovimientos {
                 "                                    ON     do.creditlineid = rdo.creditlineid  " +
                 "                                       AND do.debitoperationid = rdo.debitoperationid  " +
                 "                                 INNER JOIN SUNNELNIP1.t_gcardaccount ca  " +
-                "                                    ON ca.accountid = rdo.creditlineid  " +
+                "                                    ON ca.accountid = rdo.creditlineid AND ca.cardid = do.cardid " +
                 "                                 INNER JOIN SUNNELNIP1.t_gbranch b  " +
                 "                                    ON b.branchid = rdo.branchid  " +
                 "                           WHERE     ca.cardid = ?  " +
@@ -419,7 +419,7 @@ public class ConsultaMovimientos {
                 "                                 INNER JOIN SUNNELCRP4.t_goperationtype ot  " +
                 "                                    ON ot.operationtypeid = co.operationtypeid  " +
                 "                                 INNER JOIN SUNNELCRP4.t_gcardaccount ca  " +
-                "                                    ON ca.accountid = co.creditlineid  " +
+                "                                    ON ca.accountid = co.creditlineid AND ca.cardid = co.cardid " +
                 "                                 INNER JOIN SUNNELCRP4.t_gbranch b  " +
                 "                                    ON b.branchid = co.branchid  " +
                 "                           WHERE     ca.cardid = ?  " +
@@ -444,7 +444,7 @@ public class ConsultaMovimientos {
                 "                                    ON     pu.debitoperationid = do.debitoperationid  " +
                 "                                       AND pu.creditlineid = do.creditlineid  " +
                 "                                 INNER JOIN SUNNELCRP4.t_gcardaccount ca  " +
-                "                                    ON ca.accountid = do.creditlineid  " +
+                "                                    ON ca.accountid = do.creditlineid AND ca.cardid = do.cardid " +
                 "                                 INNER JOIN SUNNELCRP4.t_gbranch b  " +
                 "                                    ON b.branchid = do.branchid  " +
                 "                           WHERE     ca.cardid = ?  " +
@@ -467,7 +467,7 @@ public class ConsultaMovimientos {
                 "                                    ON     co.creditlineid = cro.creditlineid  " +
                 "                                       AND co.creditoperationid = cro.creditoperationid  " +
                 "                                 INNER JOIN SUNNELCRP4.t_gcardaccount ca  " +
-                "                                    ON ca.accountid = cro.creditlineid  " +
+                "                                    ON ca.accountid = cro.creditlineid AND ca.cardid = co.cardid " +
                 "                                 INNER JOIN SUNNELCRP4.t_gbranch b  " +
                 "                                    ON b.branchid = cro.branchid  " +
                 "                           WHERE     ca.cardid = ? " +
@@ -490,7 +490,7 @@ public class ConsultaMovimientos {
                 "                                    ON     do.creditlineid = rdo.creditlineid  " +
                 "                                       AND do.debitoperationid = rdo.debitoperationid  " +
                 "                                 INNER JOIN SUNNELCRP4.t_gcardaccount ca  " +
-                "                                    ON ca.accountid = rdo.creditlineid  " +
+                "                                    ON ca.accountid = rdo.creditlineid AND ca.cardid = co.cardid  " +
                 "                                 INNER JOIN SUNNELCRP4.t_gbranch b  " +
                 "                                    ON b.branchid = rdo.branchid  " +
                 "                           WHERE     ca.cardid = ?  " +
