@@ -11,7 +11,8 @@ public class EstadoSolicitudTransladoCompraenCuotasTest {
 
     @Test
     public void obtenerConsultaMovimientosPrivadaGTOk() {
-        XmlObject result = EstadoSolicitudTransladoCompraenCuotas.obtenerEstadoSolicitudTransladoCompraenCuotas("SV", "123456", "jdbc/SUNTSTGT", "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion",
+        XmlObject result = EstadoSolicitudTransladoCompraenCuotas.obtenerEstadoSolicitudTransladoCompraenCuotas(
+                "SV", "40", "jdbc/SUNTSTGT", "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion",
                 "usuario", "600831, 600831, 600831");
 
         //Status
