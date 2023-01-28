@@ -150,15 +150,22 @@ public class ListadoTarjetas {
                 "    ) AS tipoTarjeta, " +
                 "    cu.aliasname AS nombreTH, " +
                 "    CASE " +
-                "        WHEN ( " +
-                "            cl.blockedind = 'T' " +
-                "            OR c.lostcardind = 'T' " +
-                "            OR cl.uncollectableind = 'T' " +
-                "        ) THEN 'Bloqueada' " +
-                "        WHEN c.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' " +
-                "        WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
-                "        ELSE 'Activa' " +
-                "    END AS estado, " +
+                "    WHEN ( " +
+                "        cl.blockedind = 'T' " +
+                "        OR c.lostcardind = 'T' " +
+                "        OR cl.uncollectableind = 'T' " +
+                "        OR ( " +
+                "            c.riskconditionind = 'T' " +
+                "            AND c.riskcondreasoncodeid <> 1 " +
+                "        ) " +
+                "    ) THEN 'Bloqueada' " +
+                "    WHEN ( " +
+                "        c.riskconditionind = 'T' " +
+                "        AND c.riskcondreasoncodeid = 1 " +
+                "    ) THEN 'Bloqueada Temporalmente' " +
+                "    WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
+                "    ELSE 'Activa' " +
+                "END AS estado, " +
                 "    CASE " +
                 "        WHEN cl.currencycreditlimit <> 840 THEN cl.creditlimit " +
                 "        ELSE 0 " +
@@ -275,7 +282,23 @@ public class ListadoTarjetas {
                 " cl.creditlineid AS cuenta, " +
                 " DECODE(c_a.CARDTYPE, 'M', 'TITULAR', 'P', 'TITULAR', 'A', 'ADICIONAL') AS tipoTarjeta, " +
                 " cu_a.aliasname AS nombreTH, " +
-                " CASE WHEN (cl.blockedind = 'T' OR c_a.lostcardind = 'T' OR cl.uncollectableind = 'T') THEN 'Bloqueada' WHEN c_a.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' WHEN cl.overlimitind = 'T' THEN 'Sobregirada' ELSE 'Activa' END AS estado, " +
+                " CASE " +
+                "    WHEN ( " +
+                "        cl.blockedind = 'T' " +
+                "        OR c.lostcardind = 'T' " +
+                "        OR cl.uncollectableind = 'T' " +
+                "        OR ( " +
+                "            c_a.riskconditionind = 'T' " +
+                "            AND c_a.riskcondreasoncodeid <> 1 " +
+                "        ) " +
+                "    ) THEN 'Bloqueada' " +
+                "    WHEN ( " +
+                "        c_a.riskconditionind = 'T' " +
+                "        AND c_a.riskcondreasoncodeid = 1 " +
+                "    ) THEN 'Bloqueada Temporalmente' " +
+                "    WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
+                "    ELSE 'Activa' " +
+                "END AS estado, " +
                 " CASE WHEN cl.currencycreditlimit <> 840 THEN cl.creditlimit ELSE 0 END AS limiteCreditoLocal, " +
                 " CASE WHEN cl.currencycreditlimit = 840 THEN cl.creditlimit ELSE 0 END AS limiteCreditoDolares, " +
                 " CASE WHEN fb.currencyid <> 840 THEN CASE WHEN NVL(fb.saldo, 0) = 0 AND NVL(cb.saldoAFavor, 0) > 0 THEN (cb.saldoAFavor * -1) ELSE NVL(fb.saldo, 0) END ELSE 0 END AS saldoLocal, " +
@@ -339,15 +362,22 @@ public class ListadoTarjetas {
                 "    ) AS tipoTarjeta, " +
                 "    cu.aliasname AS nombreTH, " +
                 "    CASE " +
-                "        WHEN ( " +
-                "            cl.blockedind = 'T' " +
-                "            OR c.lostcardind = 'T' " +
-                "            OR cl.uncollectableind = 'T' " +
-                "        ) THEN 'Bloqueada' " +
-                "        WHEN c.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' " +
-                "        WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
-                "        ELSE 'Activa' " +
-                "    END AS estado, " +
+                "    WHEN ( " +
+                "        cl.blockedind = 'T' " +
+                "        OR c.lostcardind = 'T' " +
+                "        OR cl.uncollectableind = 'T' " +
+                "        OR ( " +
+                "            c.riskconditionind = 'T' " +
+                "            AND c.riskcondreasoncodeid <> 1 " +
+                "        ) " +
+                "    ) THEN 'Bloqueada' " +
+                "    WHEN ( " +
+                "        c.riskconditionind = 'T' " +
+                "        AND c.riskcondreasoncodeid = 1 " +
+                "    ) THEN 'Bloqueada Temporalmente' " +
+                "    WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
+                "    ELSE 'Activa' " +
+                " END AS estado,  " +
                 "    CASE " +
                 "        WHEN cl.currencycreditlimit <> 840 THEN cl.creditlimit " +
                 "        ELSE 0 " +
@@ -472,15 +502,22 @@ public class ListadoTarjetas {
                 "    ) AS tipoTarjeta, " +
                 "    cu_a.aliasname AS nombreTH, " +
                 "    CASE " +
-                "        WHEN ( " +
-                "            cl.blockedind = 'T' " +
-                "            OR c_a.lostcardind = 'T' " +
-                "            OR cl.uncollectableind = 'T' " +
-                "        ) THEN 'Bloqueada' " +
-                "        WHEN c_a.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' " +
-                "        WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
-                "        ELSE 'Activa' " +
-                "    END AS estado, " +
+                "    WHEN ( " +
+                "        cl.blockedind = 'T' " +
+                "        OR c.lostcardind = 'T' " +
+                "        OR cl.uncollectableind = 'T' " +
+                "        OR ( " +
+                "            c_a.riskconditionind = 'T' " +
+                "            AND c_a.riskcondreasoncodeid <> 1 " +
+                "        ) " +
+                "    ) THEN 'Bloqueada' " +
+                "    WHEN ( " +
+                "        c_a.riskconditionind = 'T' " +
+                "        AND c_a.riskcondreasoncodeid = 1 " +
+                "    ) THEN 'Bloqueada Temporalmente' " +
+                "    WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
+                "    ELSE 'Activa' " +
+                "END AS estado,  " +
                 "    CASE " +
                 "        WHEN cl.currencycreditlimit <> 840 THEN cl.creditlimit " +
                 "        ELSE 0 " +
@@ -606,16 +643,23 @@ public class ListadoTarjetas {
                 "        'ADICIONAL' " +
                 "    ) AS tipoTarjeta, " +
                 "    cu.aliasname AS nombreTH, " +
-                "    CASE " +
-                "        WHEN ( " +
-                "            cl.blockedind = 'T' " +
-                "            OR c.lostcardind = 'T' " +
-                "            OR cl.uncollectableind = 'T' " +
-                "        ) THEN 'Bloqueada' " +
-                "        WHEN c.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' " +
-                "        WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
-                "        ELSE 'Activa' " +
-                "    END AS estado, " +
+                "   CASE " +
+                "    WHEN ( " +
+                "        cl.blockedind = 'T' " +
+                "        OR c.lostcardind = 'T' " +
+                "        OR cl.uncollectableind = 'T' " +
+                "        OR ( " +
+                "            c.riskconditionind = 'T' " +
+                "            AND c.riskcondreasoncodeid <> 1 " +
+                "        ) " +
+                "    ) THEN 'Bloqueada' " +
+                "    WHEN ( " +
+                "        c.riskconditionind = 'T' " +
+                "        AND c.riskcondreasoncodeid = 1 " +
+                "    ) THEN 'Bloqueada Temporalmente' " +
+                "    WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
+                "    ELSE 'Activa' " +
+                " END AS estado,  " +
                 "    CASE " +
                 "        WHEN cl.currencycreditlimit <> 840 THEN cl.creditlimit " +
                 "        ELSE 0 " +
@@ -732,7 +776,23 @@ public class ListadoTarjetas {
                 " cl.creditlineid AS cuenta, " +
                 " DECODE(c_a.CARDTYPE, 'M', 'TITULAR', 'P', 'TITULAR', 'A', 'ADICIONAL') AS tipoTarjeta, " +
                 " cu_a.aliasname AS nombreTH, " +
-                " CASE WHEN (cl.blockedind = 'T' OR c_a.lostcardind = 'T' OR cl.uncollectableind = 'T') THEN 'Bloqueada' WHEN c_a.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' WHEN cl.overlimitind = 'T' THEN 'Sobregirada' ELSE 'Activa' END AS estado, " +
+                " CASE " +
+                "    WHEN ( " +
+                "        cl.blockedind = 'T' " +
+                "        OR c.lostcardind = 'T' " +
+                "        OR cl.uncollectableind = 'T' " +
+                "        OR ( " +
+                "            c_a.riskconditionind = 'T' " +
+                "            AND c_a.riskcondreasoncodeid <> 1 " +
+                "        ) " +
+                "    ) THEN 'Bloqueada' " +
+                "    WHEN ( " +
+                "        c_a.riskconditionind = 'T' " +
+                "        AND c_a.riskcondreasoncodeid = 1 " +
+                "    ) THEN 'Bloqueada Temporalmente' " +
+                "    WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
+                "    ELSE 'Activa' " +
+                "END AS estado, " +
                 " CASE WHEN cl.currencycreditlimit <> 840 THEN cl.creditlimit ELSE 0 END AS limiteCreditoLocal, " +
                 " CASE WHEN cl.currencycreditlimit = 840 THEN cl.creditlimit ELSE 0 END AS limiteCreditoDolares, " +
                 " CASE WHEN fb.currencyid <> 840 THEN CASE WHEN NVL(fb.saldo, 0) = 0 AND NVL(cb.saldoAFavor, 0) > 0 THEN (cb.saldoAFavor * -1) ELSE NVL(fb.saldo, 0) END ELSE 0 END AS saldoLocal, " +
@@ -794,16 +854,23 @@ public class ListadoTarjetas {
                 "        'ADICIONAL' " +
                 "    ) AS tipoTarjeta, " +
                 "    cu.aliasname AS nombreTH, " +
-                "    CASE " +
-                "        WHEN ( " +
-                "            cl.blockedind = 'T' " +
-                "            OR c.lostcardind = 'T' " +
-                "            OR cl.uncollectableind = 'T' " +
-                "        ) THEN 'Bloqueada' " +
-                "        WHEN c.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' " +
-                "        WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
-                "        ELSE 'Activa' " +
-                "    END AS estado, " +
+                "   CASE " +
+                "    WHEN ( " +
+                "        cl.blockedind = 'T' " +
+                "        OR c.lostcardind = 'T' " +
+                "        OR cl.uncollectableind = 'T' " +
+                "        OR ( " +
+                "            c.riskconditionind = 'T' " +
+                "            AND c.riskcondreasoncodeid <> 1 " +
+                "        ) " +
+                "    ) THEN 'Bloqueada' " +
+                "    WHEN ( " +
+                "        c.riskconditionind = 'T' " +
+                "        AND c.riskcondreasoncodeid = 1 " +
+                "    ) THEN 'Bloqueada Temporalmente' " +
+                "    WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
+                "    ELSE 'Activa' " +
+                " END AS estado,  " +
                 "    CASE " +
                 "        WHEN cl.currencycreditlimit <> 840 THEN cl.creditlimit " +
                 "        ELSE 0 " +
@@ -920,7 +987,23 @@ public class ListadoTarjetas {
                 " cl.creditlineid AS cuenta, " +
                 " DECODE(c_a.CARDTYPE, 'M', 'TITULAR', 'P', 'TITULAR', 'A', 'ADICIONAL') AS tipoTarjeta, " +
                 " cu_a.aliasname AS nombreTH, " +
-                " CASE WHEN (cl.blockedind = 'T' OR c_a.lostcardind = 'T' OR cl.uncollectableind = 'T') THEN 'Bloqueada' WHEN c_a.riskconditionind = 'T' THEN 'Bloqueada Temporalmente' WHEN cl.overlimitind = 'T' THEN 'Sobregirada' ELSE 'Activa' END AS estado, " +
+                " CASE " +
+                "    WHEN ( " +
+                "        cl.blockedind = 'T' " +
+                "        OR c.lostcardind = 'T' " +
+                "        OR cl.uncollectableind = 'T' " +
+                "        OR ( " +
+                "            c_a.riskconditionind = 'T' " +
+                "            AND c_a.riskcondreasoncodeid <> 1 " +
+                "        ) " +
+                "    ) THEN 'Bloqueada' " +
+                "    WHEN ( " +
+                "        c_a.riskconditionind = 'T' " +
+                "        AND c_a.riskcondreasoncodeid = 1 " +
+                "    ) THEN 'Bloqueada Temporalmente' " +
+                "    WHEN cl.overlimitind = 'T' THEN 'Sobregirada' " +
+                "    ELSE 'Activa' " +
+                " END AS estado,  " +
                 " CASE WHEN cl.currencycreditlimit <> 840 THEN cl.creditlimit ELSE 0 END AS limiteCreditoLocal, " +
                 " CASE WHEN cl.currencycreditlimit = 840 THEN cl.creditlimit ELSE 0 END AS limiteCreditoDolares, " +
                 " CASE WHEN fb.currencyid <> 840 THEN CASE WHEN NVL(fb.saldo, 0) = 0 AND NVL(cb.saldoAFavor, 0) > 0 THEN (cb.saldoAFavor * -1) ELSE NVL(fb.saldo, 0) END ELSE 0 END AS saldoLocal, " +
