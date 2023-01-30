@@ -339,7 +339,7 @@ public class ConsultaDatosCliente {
 				response1.setTipoIdentificacion(rs.getString("tipoIdentificacion"));
 				response1.setIdentificacion(rs.getString("numeroIdentificacion"));
 				response1.setCorreoElectronico(rs.getString("correo"));
-				response1.setCelular(rs.getString("celular"));
+				response1.setTelefonoCelular(rs.getString("celular"));
 				response1.setDireccion(rs.getString("direccion"));
 				response1.setNombrePatrono(rs.getString("direccionTrabajo"));
 				response1.setDireccionPatrono(rs.getString("lugarTrabajo"));
