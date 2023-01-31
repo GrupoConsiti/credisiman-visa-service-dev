@@ -233,7 +233,7 @@ public class ListadoTarjetas {
                 "    INNER JOIN SUNNELP3.t_gaccount a ON a.cardid = c.cardid " +
                 "    INNER JOIN SUNNELP3.t_gcreditline cl ON cl.creditlineid = a.accountid " +
                 "    INNER JOIN SUNNELP3.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
-                "    AND clp.creditlinepartitiontypeid <> 356 " +
+                "    AND clp.creditlinepartitiontypeid = 355 " +
                 "    LEFT OUTER JOIN ( " +
                 "        SELECT clt.creditlineid, " +
                 "            MAX(bpt.paymentdate) AS fechaPago " +
@@ -324,7 +324,8 @@ public class ListadoTarjetas {
                 "INNER JOIN SUNNELP3.t_gcustomer cu_a ON cu_a.customerid = c_a.customerid " +
                 "INNER JOIN SUNNELP3.t_gaccount a ON a.cardid = c.cardid " +
                 "INNER JOIN SUNNELP3.t_gcreditline cl ON cl.creditlineid = a.accountid " +
-                "INNER JOIN SUNNELP3.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid AND clp.creditlinepartitiontypeid <> 356 " +
+                "INNER JOIN SUNNELP3.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
+                "AND clp.creditlinepartitiontypeid = 355 " +
                 "LEFT OUTER JOIN (SELECT clt.creditlineid, MAX(bpt.paymentdate) AS fechaPago " +
                 "                FROM SUNNELP3.t_gbillingperiod bpt " +
                 "                INNER JOIN SUNNELP3.t_gcreditline clt ON clt.billingcycleid = bpt.billingcycleid AND clt.lastinterestaccruingdate = bpt.billingdate " +
@@ -445,7 +446,7 @@ public class ListadoTarjetas {
                 "    INNER JOIN SUNNELGTP4.t_gaccount a ON a.cardid = c.cardid " +
                 "    INNER JOIN SUNNELGTP4.t_gcreditline cl ON cl.creditlineid = a.accountid " +
                 "    INNER JOIN SUNNELGTP4.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
-                "    AND clp.creditlinepartitiontypeid <> 356 " +
+                "    AND clp.creditlinepartitiontypeid  = 355 " +
                 "    LEFT OUTER JOIN ( " +
                 "        SELECT clt.creditlineid, " +
                 "            MAX(bpt.paymentdate) AS fechaPago " +
@@ -587,7 +588,7 @@ public class ListadoTarjetas {
                 "    INNER JOIN SUNNELGTP4.t_gaccount a ON a.cardid = c.cardid " +
                 "    INNER JOIN SUNNELGTP4.t_gcreditline cl ON cl.creditlineid = a.accountid " +
                 "    INNER JOIN SUNNELGTP4.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
-                "    AND clp.creditlinepartitiontypeid <> 356 " +
+                "    AND clp.creditlinepartitiontypeid  = 355 " +
                 "    LEFT OUTER JOIN ( " +
                 "        SELECT clt.creditlineid, " +
                 "            MAX(bpt.paymentdate) AS fechaPago " +
@@ -727,7 +728,7 @@ public class ListadoTarjetas {
                 "    INNER JOIN SUNNELNIP1.t_gaccount a ON a.cardid = c.cardid " +
                 "    INNER JOIN SUNNELNIP1.t_gcreditline cl ON cl.creditlineid = a.accountid " +
                 "    INNER JOIN SUNNELNIP1.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
-                "    AND clp.creditlinepartitiontypeid <> 356 " +
+                "    AND clp.creditlinepartitiontypeid  = 355 " +
                 "    LEFT OUTER JOIN ( " +
                 "        SELECT clt.creditlineid, " +
                 "            MAX(bpt.paymentdate) AS fechaPago " +
@@ -818,7 +819,8 @@ public class ListadoTarjetas {
                 " INNER JOIN SUNNELNIP1.t_gcustomer cu_a ON cu_a.customerid = c_a.customerid " +
                 " INNER JOIN SUNNELNIP1.t_gaccount a ON a.cardid = c.cardid " +
                 " INNER JOIN SUNNELNIP1.t_gcreditline cl ON cl.creditlineid = a.accountid " +
-                " INNER JOIN SUNNELNIP1.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid AND clp.creditlinepartitiontypeid <> 356 " +
+                " INNER JOIN SUNNELNIP1.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
+                " AND clp.creditlinepartitiontypeid  = 355 " +
                 " LEFT OUTER JOIN (SELECT clt.creditlineid, MAX(bpt.paymentdate) AS fechaPago " +
                 "                FROM SUNNELNIP1.t_gbillingperiod bpt " +
                 "                INNER JOIN SUNNELNIP1.t_gcreditline clt ON clt.billingcycleid = bpt.billingcycleid AND clt.lastinterestaccruingdate = bpt.billingdate " +
@@ -938,7 +940,7 @@ public class ListadoTarjetas {
                 "    INNER JOIN SUNNELCRP4.t_gaccount a ON a.cardid = c.cardid " +
                 "    INNER JOIN SUNNELCRP4.t_gcreditline cl ON cl.creditlineid = a.accountid " +
                 "    INNER JOIN SUNNELCRP4.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
-                "    AND clp.creditlinepartitiontypeid <> 356 " +
+                "    AND clp.creditlinepartitiontypeid  = 355 " +
                 "    LEFT OUTER JOIN ( " +
                 "        SELECT clt.creditlineid, " +
                 "            MAX(bpt.paymentdate) AS fechaPago " +
@@ -1029,7 +1031,8 @@ public class ListadoTarjetas {
                 " INNER JOIN SUNNELCRP4.t_gcustomer cu_a ON cu_a.customerid = c_a.customerid " +
                 " INNER JOIN SUNNELCRP4.t_gaccount a ON a.cardid = c.cardid " +
                 " INNER JOIN SUNNELCRP4.t_gcreditline cl ON cl.creditlineid = a.accountid " +
-                " INNER JOIN SUNNELCRP4.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid AND clp.creditlinepartitiontypeid <> 356 " +
+                " INNER JOIN SUNNELCRP4.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
+                " AND clp.creditlinepartitiontypeid  = 355 " +
                 " LEFT OUTER JOIN (SELECT clt.creditlineid, MAX(bpt.paymentdate) AS fechaPago " +
                 "                FROM SUNNELCRP4.t_gbillingperiod bpt " +
                 "                INNER JOIN SUNNELCRP4.t_gcreditline clt ON clt.billingcycleid = bpt.billingcycleid AND clt.lastinterestaccruingdate = bpt.billingdate " +
