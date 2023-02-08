@@ -12,6 +12,7 @@ import com.siman.credisiman.visa.utils.Message;
 import com.siman.credisiman.visa.utils.Utils;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +60,8 @@ public class ListadoTarjetas {
             List<Tarjetas> response2 = obtenerDatosArca(identificacion, remoteJndiSunnel, pais);
             List<Tarjetas> response3 = null;
             response3 = obtenerDatosSiscard(pais, identificacion, siscardUrl);
-            if(response2 != null && response3 != null){
+            if (response2 != null && response3 != null) {
+                log.info("ALL");
                 response2.addAll(response3);
                 return estructura(response2);
             }
@@ -127,7 +129,8 @@ public class ListadoTarjetas {
             cursor.insertElementWithText(new QName(namespace, "saldoMonedero"), tarjetas.getSaldoMonedero());
             cursor.insertElementWithText(new QName(namespace, "rombosAcumulados"), tarjetas.getRombosAcumulados());
             cursor.insertElementWithText(new QName(namespace, "rombosDinero"), tarjetas.getRombosDinero());
-            cursor.insertElementWithText(new QName(namespace, "fondosReservados"), tarjetas.getFondosReservados());
+            cursor.insertElementWithText(new QName(namespace, "fondosReservadosLocal"), tarjetas.getFondosReservadosLocal());
+            cursor.insertElementWithText(new QName(namespace, "fondosReservadosDolares"), tarjetas.getFondosReservadosDolares());
             cursor.toParent();
         }
         cursor.toParent();
@@ -227,13 +230,14 @@ public class ListadoTarjetas {
                 "    ' ' AS saldoMonedero, " +
                 "    ' ' AS rombosAcumulados, " +
                 "    ' ' AS rombosDinero, " +
-                "    ' ' AS fondosReservados " +
+                "    ' ' AS fondosReservadosLocal, " +
+                "    ' ' AS fondosReservadosDolares " +
                 "FROM SUNNELP3.t_gcard c " +
                 "    INNER JOIN SUNNELP3.t_gcustomer cu ON cu.customerid = c.customerid " +
                 "    INNER JOIN SUNNELP3.t_gaccount a ON a.cardid = c.cardid " +
                 "    INNER JOIN SUNNELP3.t_gcreditline cl ON cl.creditlineid = a.accountid " +
                 "    INNER JOIN SUNNELP3.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
-                "    AND clp.creditlinepartitiontypeid = 355 " +
+                "    AND clp.creditlinepartitiontypeid = 355" +
                 "    LEFT OUTER JOIN ( " +
                 "        SELECT clt.creditlineid, " +
                 "            MAX(bpt.paymentdate) AS fechaPago " +
@@ -316,7 +320,8 @@ public class ListadoTarjetas {
                 " ' ' AS saldoMonedero, " +
                 " ' ' AS rombosAcumulados, " +
                 " ' ' AS rombosDinero, " +
-                " ' ' AS fondosReservados " +
+                " ' ' AS fondosReservadosLocal, " +
+                " ' ' AS fondosReservadosDolares " +
                 " FROM SUNNELP3.t_gcard c " +
                 " INNER JOIN SUNNELP3.t_gcustomer cu ON cu.customerid = c.customerid " +
                 "INNER JOIN SUNNELP3.t_gadditionalcard ac ON ac.cardid = c.cardid " +
@@ -324,8 +329,7 @@ public class ListadoTarjetas {
                 "INNER JOIN SUNNELP3.t_gcustomer cu_a ON cu_a.customerid = c_a.customerid " +
                 "INNER JOIN SUNNELP3.t_gaccount a ON a.cardid = c.cardid " +
                 "INNER JOIN SUNNELP3.t_gcreditline cl ON cl.creditlineid = a.accountid " +
-                "INNER JOIN SUNNELP3.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
-                "AND clp.creditlinepartitiontypeid = 355 " +
+                "INNER JOIN SUNNELP3.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid AND clp.creditlinepartitiontypeid = 355" +
                 "LEFT OUTER JOIN (SELECT clt.creditlineid, MAX(bpt.paymentdate) AS fechaPago " +
                 "                FROM SUNNELP3.t_gbillingperiod bpt " +
                 "                INNER JOIN SUNNELP3.t_gcreditline clt ON clt.billingcycleid = bpt.billingcycleid AND clt.lastinterestaccruingdate = bpt.billingdate " +
@@ -440,13 +444,14 @@ public class ListadoTarjetas {
                 "    ' ' AS saldoMonedero, " +
                 "    ' ' AS rombosAcumulados, " +
                 "    ' ' AS rombosDinero, " +
-                "    ' ' AS fondosReservados " +
+                "    ' ' AS fondosReservadosLocal, " +
+                "    ' ' AS fondosReservadosDolares " +
                 "FROM SUNNELGTP4.t_gcard c " +
                 "    INNER JOIN SUNNELGTP4.t_gcustomer cu ON cu.customerid = c.customerid " +
                 "    INNER JOIN SUNNELGTP4.t_gaccount a ON a.cardid = c.cardid " +
                 "    INNER JOIN SUNNELGTP4.t_gcreditline cl ON cl.creditlineid = a.accountid " +
                 "    INNER JOIN SUNNELGTP4.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
-                "    AND clp.creditlinepartitiontypeid  = 355 " +
+                "    AND clp.creditlinepartitiontypeid = 355" +
                 "    LEFT OUTER JOIN ( " +
                 "        SELECT clt.creditlineid, " +
                 "            MAX(bpt.paymentdate) AS fechaPago " +
@@ -579,7 +584,8 @@ public class ListadoTarjetas {
                 "    ' ' AS saldoMonedero, " +
                 "    ' ' AS rombosAcumulados, " +
                 "    ' ' AS rombosDinero, " +
-                "    ' ' AS fondosReservados " +
+                "    ' ' AS fondosReservadosLocal, " +
+                "    ' ' AS fondosReservadosDolares " +
                 "FROM SUNNELGTP4.t_gcard c " +
                 "    INNER JOIN SUNNELGTP4.t_gcustomer cu ON cu.customerid = c.customerid " +
                 "    INNER JOIN SUNNELGTP4.t_gadditionalcard ac ON ac.cardid = c.cardid " +
@@ -588,7 +594,7 @@ public class ListadoTarjetas {
                 "    INNER JOIN SUNNELGTP4.t_gaccount a ON a.cardid = c.cardid " +
                 "    INNER JOIN SUNNELGTP4.t_gcreditline cl ON cl.creditlineid = a.accountid " +
                 "    INNER JOIN SUNNELGTP4.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
-                "    AND clp.creditlinepartitiontypeid  = 355 " +
+                "    AND clp.creditlinepartitiontypeid = 355" +
                 "    LEFT OUTER JOIN ( " +
                 "        SELECT clt.creditlineid, " +
                 "            MAX(bpt.paymentdate) AS fechaPago " +
@@ -722,13 +728,14 @@ public class ListadoTarjetas {
                 "    ' ' AS saldoMonedero, " +
                 "    ' ' AS rombosAcumulados, " +
                 "    ' ' AS rombosDinero, " +
-                "    ' ' AS fondosReservados " +
+                "    ' ' AS fondosReservadosLocal, " +
+                "    ' ' AS fondosReservadosDolares " +
                 "FROM SUNNELNIP1.t_gcard c " +
                 "    INNER JOIN SUNNELNIP1.t_gcustomer cu ON cu.customerid = c.customerid " +
                 "    INNER JOIN SUNNELNIP1.t_gaccount a ON a.cardid = c.cardid " +
                 "    INNER JOIN SUNNELNIP1.t_gcreditline cl ON cl.creditlineid = a.accountid " +
                 "    INNER JOIN SUNNELNIP1.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
-                "    AND clp.creditlinepartitiontypeid  = 355 " +
+                "    AND clp.creditlinepartitiontypeid = 355" +
                 "    LEFT OUTER JOIN ( " +
                 "        SELECT clt.creditlineid, " +
                 "            MAX(bpt.paymentdate) AS fechaPago " +
@@ -811,7 +818,8 @@ public class ListadoTarjetas {
                 " ' ' AS saldoMonedero, " +
                 " ' ' AS rombosAcumulados, " +
                 " ' ' AS rombosDinero, " +
-                " ' ' AS fondosReservados " +
+                " ' ' AS fondosReservadosLocal, " +
+                " ' ' AS fondosReservadosDolares " +
                 " FROM SUNNELNIP1.t_gcard c " +
                 " INNER JOIN SUNNELNIP1.t_gcustomer cu ON cu.customerid = c.customerid " +
                 " INNER JOIN SUNNELNIP1.t_gadditionalcard ac ON ac.cardid = c.cardid " +
@@ -819,8 +827,7 @@ public class ListadoTarjetas {
                 " INNER JOIN SUNNELNIP1.t_gcustomer cu_a ON cu_a.customerid = c_a.customerid " +
                 " INNER JOIN SUNNELNIP1.t_gaccount a ON a.cardid = c.cardid " +
                 " INNER JOIN SUNNELNIP1.t_gcreditline cl ON cl.creditlineid = a.accountid " +
-                " INNER JOIN SUNNELNIP1.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
-                " AND clp.creditlinepartitiontypeid  = 355 " +
+                " INNER JOIN SUNNELNIP1.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid AND clp.creditlinepartitiontypeid = 355" +
                 " LEFT OUTER JOIN (SELECT clt.creditlineid, MAX(bpt.paymentdate) AS fechaPago " +
                 "                FROM SUNNELNIP1.t_gbillingperiod bpt " +
                 "                INNER JOIN SUNNELNIP1.t_gcreditline clt ON clt.billingcycleid = bpt.billingcycleid AND clt.lastinterestaccruingdate = bpt.billingdate " +
@@ -934,13 +941,14 @@ public class ListadoTarjetas {
                 "    ' ' AS saldoMonedero, " +
                 "    ' ' AS rombosAcumulados, " +
                 "    ' ' AS rombosDinero, " +
-                "    ' ' AS fondosReservados " +
+                "    ' ' AS fondosReservadosLocal, " +
+                "    ' ' AS fondosReservadosDolares " +
                 "FROM SUNNELCRP4.t_gcard c " +
                 "    INNER JOIN SUNNELCRP4.t_gcustomer cu ON cu.customerid = c.customerid " +
                 "    INNER JOIN SUNNELCRP4.t_gaccount a ON a.cardid = c.cardid " +
                 "    INNER JOIN SUNNELCRP4.t_gcreditline cl ON cl.creditlineid = a.accountid " +
                 "    INNER JOIN SUNNELCRP4.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
-                "    AND clp.creditlinepartitiontypeid  = 355 " +
+                "    AND clp.creditlinepartitiontypeid = 355" +
                 "    LEFT OUTER JOIN ( " +
                 "        SELECT clt.creditlineid, " +
                 "            MAX(bpt.paymentdate) AS fechaPago " +
@@ -981,7 +989,7 @@ public class ListadoTarjetas {
                 "            cbt.currencyid " +
                 "    ) cb ON cb.creditlineid = cl.creditlineid " +
                 "    AND cb.currencyid = cl.currencycreditlimit " +
-                " WHERE c.closedind = 'F' "+
+                " WHERE c.closedind = 'F' " +
                 "    AND cu.identificationnumber IN( ? , ? ) " +
                 " UNION " +
                 " SELECT  " +
@@ -1023,7 +1031,8 @@ public class ListadoTarjetas {
                 " ' ' AS saldoMonedero, " +
                 " ' ' AS rombosAcumulados, " +
                 " ' ' AS rombosDinero, " +
-                " ' ' AS fondosReservados " +
+                " ' ' AS fondosReservadosLocal, " +
+                " ' ' AS fondosReservadosDolares " +
                 " FROM SUNNELCRP4.t_gcard c " +
                 " INNER JOIN SUNNELCRP4.t_gcustomer cu ON cu.customerid = c.customerid " +
                 " INNER JOIN SUNNELCRP4.t_gadditionalcard ac ON ac.cardid = c.cardid " +
@@ -1031,8 +1040,7 @@ public class ListadoTarjetas {
                 " INNER JOIN SUNNELCRP4.t_gcustomer cu_a ON cu_a.customerid = c_a.customerid " +
                 " INNER JOIN SUNNELCRP4.t_gaccount a ON a.cardid = c.cardid " +
                 " INNER JOIN SUNNELCRP4.t_gcreditline cl ON cl.creditlineid = a.accountid " +
-                " INNER JOIN SUNNELCRP4.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid " +
-                " AND clp.creditlinepartitiontypeid  = 355 " +
+                " INNER JOIN SUNNELCRP4.t_gcreditlinepartition clp ON cl.creditlineid = clp.creditlineid AND clp.creditlinepartitiontypeid = 355" +
                 " LEFT OUTER JOIN (SELECT clt.creditlineid, MAX(bpt.paymentdate) AS fechaPago " +
                 "                FROM SUNNELCRP4.t_gbillingperiod bpt " +
                 "                INNER JOIN SUNNELCRP4.t_gcreditline clt ON clt.billingcycleid = bpt.billingcycleid AND clt.lastinterestaccruingdate = bpt.billingdate " +
@@ -1109,7 +1117,8 @@ public class ListadoTarjetas {
             tarjeta.setSaldoMonedero(" ");
             tarjeta.setRombosAcumulados(" ");
             tarjeta.setRombosDinero(" ");
-            tarjeta.setFondosReservados(" ");
+            tarjeta.setFondosReservadosLocal("0");
+            tarjeta.setFondosReservadosDolares("0");
             tarjetasList.add(tarjeta);
         }
         log.info("registros encontrados: " + counter);
@@ -1123,7 +1132,6 @@ public class ListadoTarjetas {
 
     public static List<Tarjetas> obtenerDatosSiscard(String pais, String identificacion, String siscardUrl) throws Exception {
         if (pais.equals("SV")) {
-
             String identifacionFormater = identificacion.replace("-", "")
                     .replace("_", "").replace(" ", "");
 
@@ -1145,9 +1153,28 @@ public class ListadoTarjetas {
             response1 = new ObjectMapper().readValue(response.toString(), ListadoTarjetasResponse.class);
             List<Tarjetas> responseList = new ArrayList<>();
 
-            if(response1.getRespuestas() == null) {
+            if (response1.getRespuestas() == null) {
                 for (int i = 0; i < response1.getCuentas().size(); i++) {
                     CuentasResponse cuentas = response1.getCuentas().get(i);
+
+                    //  Consultar servicio: consultaInformacionSiscard
+                    JSONObject jsonSend2 = new JSONObject(); //json a enviar
+                    jsonSend2.put("country", pais)
+                            .put("processIdentifier", "consultaInformacionSiscard")
+                            .put("emisor", cuentas.getEmisor())
+                            .put("cuenta", cuentas.getCuenta())
+                            .put("cif", "")
+                            .put("numeroTarjeta", "");
+
+                    HttpResponse<String> jsonResponse2 //realizar petición demiante unirest
+                            = Unirest.post(siscardUrl.concat("/consultaInformacionSiscard"))
+                            .header("Content-Type", "application/json")
+                            .body(jsonSend2.toString())
+                            .asString();
+
+                    JSONObject response2 = new JSONObject(jsonResponse2.getBody());
+                    JSONArray arrCuentas = response2.getJSONArray("cuentas");
+
                     for (TarjetasResponse tarjetas : cuentas.getTarjetas()) {
                         Tarjetas tarjeta = new Tarjetas();
 
@@ -1161,7 +1188,7 @@ public class ListadoTarjetas {
                                 : cuentas.getLimiteCreditoLocal());
                         tarjeta.setLimiteCreditoDolares((!tarjetas.getLimiteCreditoInter().equals("0.00"))
                                 ? tarjetas.getLimiteCreditoInter()
-                                :cuentas.getLimiteCreditoInter());
+                                : cuentas.getLimiteCreditoInter());
                         tarjeta.setSaldoLocal(cuentas.getSaldoLocal());
                         tarjeta.setSaldoDolares(cuentas.getSaldoInter());
                         tarjeta.setDisponibleLocal(tarjetas.getDispLocalTarjeta());
@@ -1177,8 +1204,13 @@ public class ListadoTarjetas {
                         tarjeta.setSaldoMonedero(" ");
                         tarjeta.setRombosAcumulados(" ");
                         tarjeta.setRombosDinero(cuentas.getSaldoPremiacion());
-                        tarjeta.setFondosReservados(" ");
-
+                        for (int j = 0; j < arrCuentas.length(); j++) {
+                            JSONObject objTarjetas = arrCuentas.getJSONObject(j);
+                            JSONArray arrTarjetas = objTarjetas.getJSONArray("tarjetas");
+                            JSONObject jsonObject3 = arrTarjetas.getJSONObject(j);
+                            tarjeta.setFondosReservadosLocal(jsonObject3.get("debitoTransitoLocal").toString());
+                            tarjeta.setFondosReservadosDolares(jsonObject3.get("debitoTransitoInter").toString());
+                        }
                         responseList.add(tarjeta);
                     }
                 }

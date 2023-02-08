@@ -28,9 +28,8 @@ public class ConsultaMovimientos {
     private static final String operationResponse = "ObtenerConsultaMovimientosResponse";
 
     public static XmlObject obtenerConsultaMovimientos(String pais, String numeroTarjeta, String fechaInicial,
-                                                       String fechaFinal, String remoteJndiSunnel, String remoteJndiOrion,
-                                                       String siscardUrl, String siscardUser, String binCredisiman,
-                                                       String tipoTarjeta) {
+                                                       String fechaFinal, String tipoTarjeta, String remoteJndiSunnel, String remoteJndiOrion,
+                                                       String siscardUrl, String siscardUser, String binCredisiman) {
         //validar campos requeridos
         Utils utils = new Utils();
         Message message = new Message();
@@ -505,7 +504,7 @@ public class ConsultaMovimientos {
 
 
         PreparedStatement sentencia = null;
-        switch (pais){
+        switch (pais) {
             case "SV":
                 sentencia = conexion.prepareStatement(query1);
                 break;
@@ -555,9 +554,9 @@ public class ConsultaMovimientos {
         conexion.close();
         response1.setMovimientos(listaMovimientos);
 
-        if(counter>0){
+        if (counter > 0) {
             return response1;
-        }else{
+        } else {
             return null;
         }
 

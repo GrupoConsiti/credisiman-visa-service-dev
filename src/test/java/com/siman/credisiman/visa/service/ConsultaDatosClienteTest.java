@@ -41,4 +41,16 @@ public class ConsultaDatosClienteTest {
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());
         assertEquals("SUCCESS", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:status")[0]).getStringValue());
     }
+
+    @Test
+    public void obtenerDatosClienteNIOk() {
+        XmlObject result = ConsultaDatosCliente.obtenerDatosCliente("NI", "001 2509650 021A",
+                "jdbc/SUNTSTNI", "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion",
+                "usuario", "600831, 600831, 600831");
+
+        //Status
+        assertEquals("00", ((SimpleValue) result.selectPath( "declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());
+        assertEquals("SUCCESS", ((SimpleValue) result.selectPath( "declare namespace ns='" + NS + "' " + ".//ns:status")[0]).getStringValue());
+
+    }
 }

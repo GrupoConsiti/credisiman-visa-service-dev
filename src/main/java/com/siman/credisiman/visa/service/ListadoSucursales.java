@@ -1,13 +1,12 @@
 package com.siman.credisiman.visa.service;
 
-
-
-import com.siman.credisiman.visa.dto.planes.Sucursal;
+import com.siman.credisiman.visa.dto.sucursales.Sucursal;
 import com.siman.credisiman.visa.utils.ConnectionHandler;
 import com.siman.credisiman.visa.utils.Message;
 import com.siman.credisiman.visa.utils.Utils;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,10 +53,10 @@ public class ListadoSucursales {
 
         ConnectionHandler connectionHandler = new ConnectionHandler();
         Connection conexion = connectionHandler.getConnection(remoteJndiOrion);
-
         PreparedStatement sentencia = null;
+
         try {
-            switch (pais){
+            switch (pais) {
                 case "SV":
                     sentencia = conexion.prepareStatement(query1);
                     break;
@@ -81,12 +80,12 @@ public class ListadoSucursales {
             }
 
             conexion.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return message.genericMessage("ERROR", "600",
                     "Error general contacte al administrador del sistema...", namespace, operationResponse);
         }
-        if(listadoSucursal.size() >0){
+        if (listadoSucursal.size() > 0) {
             for (int i = 0; i < listadoSucursal.size(); i++) {
                 cursor.beginElement(new QName(namespace, "sucursales"));
                 cursor.insertElementWithText(new QName(namespace, "codigoSucursal"), listadoSucursal.get(i).getCodigoSucursal());
@@ -97,7 +96,7 @@ public class ListadoSucursales {
             cursor.toParent();
             log.info("response = [" + result + "]");
             return result;
-        }else{
+        } else {
             return message.genericMessage("ERROR", "400",
                     "No se encontraron sucursales disponibles", namespace, operationResponse);
 

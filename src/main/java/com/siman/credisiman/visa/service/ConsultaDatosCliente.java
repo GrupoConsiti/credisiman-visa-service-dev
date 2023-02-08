@@ -30,21 +30,21 @@ public class ConsultaDatosCliente {
 
 		if (utils.validateNotNull(pais) || utils.validateNotEmpty(pais)) {
 			log.info("pais required");
-			return message.genericMessage("ERROR", "400", "El campo pais es obligatorio", namespace, operationResponse);
+			return message.genericMessage("ERROR", "025", "El campo pais es obligatorio", namespace, operationResponse);
 		}
 		if (utils.validateNotNull(identificacion) || utils.validateNotEmpty(identificacion)) {
 			log.info("identificacion required");
-			return message.genericMessage("ERROR", "400", "El campo identificación es obligatorio", namespace, operationResponse);
+			return message.genericMessage("ERROR", "025", "El campo identificación es obligatorio", namespace, operationResponse);
 		}
 
 		//validar longitudes
 		if (!utils.validateLongitude(pais, 3)) {
 			log.info("pais, size overload");
-			return message.genericMessage("ERROR", "400", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
+			return message.genericMessage("ERROR", "025", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
 		}
 		if (!utils.validateLongitude(identificacion, 19)) {
 			log.info("identificacion, size overload");
-			return message.genericMessage("ERROR", "400", "La longitud del campo identificacion debe ser menor o igual a 19", namespace, operationResponse);
+			return message.genericMessage("ERROR", "025", "La longitud del campo identificacion debe ser menor o igual a 19", namespace, operationResponse);
 		}
 
 
@@ -56,7 +56,7 @@ public class ConsultaDatosCliente {
 			if (response2 != null) {
 				log.info("DATOS TARJETA PRIVADA");
 				return estructura(response2);
-			}else {
+			} else {
 				log.info("No se encontraron datos en siscard");
 			}
 			//DATOS TARJETA CREDISIMAN
@@ -65,7 +65,7 @@ public class ConsultaDatosCliente {
 				log.info("DATOS TARJETA CREDISIMAN");
 				return estructura(response3);
 			} else {
-				log.info("obtenerDatosCliente response = [" +message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse)+ "]");
+				log.info("obtenerDatosCliente response = [" + message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse) + "]");
 				return message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse);
 			}
 
@@ -75,7 +75,7 @@ public class ConsultaDatosCliente {
 			return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);
 		} catch (NullPointerException nul) {
 			return message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse);
-		}catch (Exception ex) {
+		} catch (Exception ex) {
 			log.error("SERVICE ERROR, " + ex.getMessage());
 			log.info("obtenerDatosCliente response = [" + message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse) + "]");
 			return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);
@@ -118,12 +118,14 @@ public class ConsultaDatosCliente {
 	public static ConsultaDatosClienteResponse tarjetaCredisiman(String pais, String siscardUser, String identificacion, String siscardUrl) throws Exception {
 		new ConsultaDatosClienteResponse();
 		ConsultaDatosClienteResponse response2;
+		//crear identificación con formato sin(-,_ y espacios en blanco )
+		String identificacionFormater = identificacion.replace("-", "").replace("_", "").replace(" ", "");
 
 		JSONObject jsonSend = new JSONObject(); //json a enviar
 		jsonSend.put("country", pais)
 				.put("processIdentifier", "ConsultaDatosEnte")
 				.put("tipoMensaje", 4300)
-				.put("identificacion", identificacion)
+				.put("identificacion", identificacionFormater)
 				.put("usuarioSiscard", siscardUser);
 
 		HttpResponse<String> jsonResponse //realizar petición demiante unirest
@@ -183,7 +185,7 @@ public class ConsultaDatosCliente {
 				"FROM " +
 				"    sunnelp3.t_gcustomer c " +
 				"        INNER JOIN SUNNELP3.t_gpersoncustomer pc ON pc.customerid = c.customerid " +
-				"WHERE c.identificationnumber = ? ";
+				"WHERE c.identificationnumber IN(?,?)";
 
 		String query2 = " SELECT               " +
 				"                    c.customerid AS niu, + " +
@@ -223,7 +225,7 @@ public class ConsultaDatosCliente {
 				"                FROM " +
 				"                    SUNNELGTP4.t_gcustomer c " +
 				"                        INNER JOIN SUNNELGTP4.t_gpersoncustomer pc ON pc.customerid = c.customerid " +
-				"                        WHERE c.identificationnumber = ? ";
+				"                        WHERE c.identificationnumber IN(?,?) ";
 		String query3 = " SELECT               " +
 				"                    c.customerid AS niu, + " +
 				"                    substr(pc.firstname, 1, instr(pc.firstname, ' ') - 1) as primerNombre, " +
@@ -262,7 +264,7 @@ public class ConsultaDatosCliente {
 				"                FROM " +
 				"                    SUNNELNIP1.t_gcustomer c " +
 				"                        INNER JOIN SUNNELNIP1.t_gpersoncustomer pc ON pc.customerid = c.customerid " +
-				"                        WHERE c.identificationnumber = ? ";
+				"                        WHERE c.identificationnumber IN(?,?) ";
 
 		String query4 = " SELECT               " +
 				"                    c.customerid AS niu, + " +
@@ -302,14 +304,14 @@ public class ConsultaDatosCliente {
 				"                FROM " +
 				"                     SUNNELCRP4.t_gcustomer c " +
 				"                        INNER JOIN SUNNELCRP4.t_gpersoncustomer pc ON pc.customerid = c.customerid " +
-				"                        WHERE c.identificationnumber = ?";
+				"                        WHERE c.identificationnumber IN(?,?)";
 		ConsultaDatosClienteResponse response1 = new ConsultaDatosClienteResponse();
 		//instancia de conexion
 		Connection conexion = new ConnectionHandler().getConnection(remoteJndiSunnel);
 
 
 		PreparedStatement sentencia = null;
-		switch (pais){
+		switch (pais) {
 			case "SV":
 				sentencia = conexion.prepareStatement(QUERY1);
 				break;
@@ -324,11 +326,14 @@ public class ConsultaDatosCliente {
 				break;
 		}
 
+		//crear identificación con formato sin(-,_ y espacios en blanco )
+		String identificacionFormater = identifier.replace("-", "").replace("_", "").replace(" ", "");
 		sentencia.setString(1, identifier);
+		sentencia.setString(2, identificacionFormater);
 		ResultSet rs = sentencia.executeQuery();
 
-		if (rs.getRow()==0) {
-			while (rs.next()) {
+		if (rs.getRow() == 0) {
+			if (rs.next()) {
 				//Display values
 				response1.setNombre(rs.getString("primerNombre"));
 				response1.setSegundoNombre(rs.getString("segundoNombre"));
@@ -339,7 +344,7 @@ public class ConsultaDatosCliente {
 				response1.setTipoIdentificacion(rs.getString("tipoIdentificacion"));
 				response1.setIdentificacion(rs.getString("numeroIdentificacion"));
 				response1.setCorreoElectronico(rs.getString("correo"));
-				response1.setTelefonoCelular(rs.getString("celular"));
+				response1.setCelular(rs.getString("celular"));
 				response1.setDireccion(rs.getString("direccion"));
 				response1.setNombrePatrono(rs.getString("direccionTrabajo"));
 				response1.setDireccionPatrono(rs.getString("lugarTrabajo"));

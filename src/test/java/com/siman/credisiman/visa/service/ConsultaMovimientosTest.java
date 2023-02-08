@@ -11,10 +11,10 @@ public class ConsultaMovimientosTest {
 
     @Test
     public void obtenerConsultaMovimientosPrivadaOk() {
-        XmlObject result = ConsultaMovimientos.obtenerConsultaMovimientos("SLV",
-                "6008314502274917", "20180101", "20221231",
+        XmlObject result = ConsultaMovimientos.obtenerConsultaMovimientos("SV",
+                "6008314502274917", "20180101", "20221231", "P",
                 "jdbc/SUNTST", "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion",
-                "usuario", "600831, 600831, 600831", "P");
+                "usuario", "600831, 600831, 600831");
 //        int i = 0;
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());
@@ -24,9 +24,9 @@ public class ConsultaMovimientosTest {
     @Test
     public void obtenerConsultaMovimientosPrivadaGTOk() {
         XmlObject result = ConsultaMovimientos.obtenerConsultaMovimientos("GT",
-                "6008324000363591", "20180101", "20221231",
+                "6008324000363591", "20180101", "20221231", "P",
                 "jdbc/SUNTSTGT", "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion",
-                "usuario", "600831, 600831, 600831", "P");
+                "usuario", "600831, 600831, 600831");
 
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());
@@ -36,9 +36,9 @@ public class ConsultaMovimientosTest {
     @Test
     public void obtenerConsultaMovimientosVisaOk() {
         XmlObject result = ConsultaMovimientos.obtenerConsultaMovimientos("SV",
-                "4573840028591061", "20190916", "20211030",
+                "4573840028591061", "20190916", "20211030", "V",
                 "jdbc/SUNTST", "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion",
-                "usuario", "600831, 600831, 600831", "V");
+                "usuario", "600831, 600831, 600831");
 //        int i = 0;
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.siman.credisiman.visa.dto.bloqueodesbloqueotarjeta.BloqueoDesbloqueoTarjetaResponse;
+import com.siman.credisiman.visa.dto.sucursales.Sucursal;
 import com.siman.credisiman.visa.utils.ConnectionHandler;
 import com.siman.credisiman.visa.utils.Message;
 import com.siman.credisiman.visa.utils.Utils;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import javax.xml.namespace.QName;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class BloqueoDesbloqueoTarjeta {
     private static final Logger log = LoggerFactory.getLogger(BloqueoDesbloqueoTarjeta.class);
@@ -83,6 +85,7 @@ public class BloqueoDesbloqueoTarjeta {
 
             }
         } catch (Exception e) {
+            e.printStackTrace();
             log.info("ObtenerBloqueoDesbloqueoTarjeta response = [" + message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse) + "]");
             return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);
         }
@@ -102,9 +105,13 @@ public class BloqueoDesbloqueoTarjeta {
         String query2SV = "UPDATE SUNNELP3.t_gcard SET riskconditionind = 'T', riskconditiondate = CURRENT_DATE, " +
                 "riskcondreasoncodeid = 2 WHERE cardid = ? ";
 
-//        DESBLOQUEO TEMPORAL (estadoDeseado 0)
+        //        DESBLOQUEO TEMPORAL (estadoDeseado 0)
         String query3SV = "UPDATE SUNNELP3.t_gcard SET riskconditionind = 'F', riskconditiondate = null, " +
                 "riskcondreasoncodeid = null WHERE cardid = ? AND riskcondreasoncodeid = 1";
+
+        // Validar tarjetas bloqueadas permanentemente
+        String query4SV = "SELECT riskconditionind, riskconditiondate, riskcondreasoncodeid " +
+                "FROM SUNNELP3.t_gcard WHERE cardid = ? AND riskcondreasoncodeid = 2";
 
 //           query's guatemala
         String query1GT = " UPDATE SUNNELGTP4.t_gcard " +
@@ -125,6 +132,10 @@ public class BloqueoDesbloqueoTarjeta {
                 "       riskcondreasoncodeid = NULL " +
                 " WHERE cardid = ? AND riskcondreasoncodeid = 1 ";
 
+        // Validar tarjetas bloqueadas permanentemente
+        String query4GT = "SELECT riskconditionind, riskconditiondate, riskcondreasoncodeid " +
+                "FROM SUNNELGTP4.t_gcard WHERE cardid = ? AND riskcondreasoncodeid = 2";
+
         //           query's Nicaragua
         String query1NI = " UPDATE SUNNELNIP1.t_gcard " +
                 "        SET riskconditionind = 'T', " +
@@ -144,12 +155,16 @@ public class BloqueoDesbloqueoTarjeta {
                 "       riskcondreasoncodeid = NULL " +
                 " WHERE cardid = ? AND riskcondreasoncodeid = 1 ";
 
+        // Validar tarjetas bloqueadas permanentemente
+        String query4NI = "SELECT riskconditionind, riskconditiondate, riskcondreasoncodeid " +
+                "FROM SUNNELNIP1.t_gcard WHERE cardid = ? AND riskcondreasoncodeid = 2";
+
         //           query's Costa Rica
         String query1CR = " UPDATE SUNNELCRP4.t_gcard " +
-                "        SET riskconditionind = 'T', " +
-                "                riskconditiondate = CURRENT_DATE, " +
-                "                riskcondreasoncodeid = 1 " +
-                "        WHERE cardid = ? AND riskcondreasoncodeid IS NULL ";
+                "                        SET riskconditionind = 'T',  " +
+                "                                riskconditiondate = CURRENT_DATE, " +
+                "                                riskcondreasoncodeid = 1  " +
+                "                        WHERE cardid = ? AND riskcondreasoncodeid IS NULL ";
 
         String query2CR = "UPDATE SUNNELCRP4.t_gcard " +
                 "        SET riskconditionind = 'T', " +
@@ -157,16 +172,46 @@ public class BloqueoDesbloqueoTarjeta {
                 "            riskcondreasoncodeid = 2 " +
                 "        WHERE cardid = ? ";
 
-        String query3CR = " UPDATE SUNNELCRP4.t_gcard " +
-                "   SET riskconditionind = 'F', " +
-                "       riskconditiondate = NULL, " +
-                "       riskcondreasoncodeid = NULL " +
-                " WHERE cardid = ? AND riskcondreasoncodeid = 1 ";
+        String query3CR = " UPDATE SUNNELCRP4.t_gcard  " +
+                "                   SET riskconditionind = 'F',  " +
+                "                       riskconditiondate = NULL, " +
+                "                       riskcondreasoncodeid = NULL  " +
+                "                 WHERE cardid = '6275804000061457' AND riskcondreasoncodeid = 1 ";
+
+        // Validar tarjetas bloqueadas permanentemente
+        String query4CR = "SELECT riskconditionind, riskconditiondate, riskcondreasoncodeid " +
+                "FROM SUNNELCRP4.t_gcard WHERE cardid = ? AND riskcondreasoncodeid = 2";
 
         ConnectionHandler connectionHandler = new ConnectionHandler();
         Connection conexion = connectionHandler.getConnection(remoteJndiSunnel);
         int result = 0;
         PreparedStatement ps1 = null;
+
+        PreparedStatement ps = null;
+        switch (pais) {
+            case "SV":
+                ps = conexion.prepareStatement(query4SV);
+                break;
+            case "GT":
+                ps = conexion.prepareStatement(query4GT);
+                break;
+            case "NI":
+                ps = conexion.prepareStatement(query4NI);
+                break;
+            case "CR":
+                ps = conexion.prepareStatement(query4CR);
+                break;
+        }
+        ps.setString(1, numeroTarjeta);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            response.setStatusMessage("No se puede realizar un cambio, la tarjeta se encuentra bloqueada permanentemente.");
+            response.setStatusCode("400");
+            response.setStatus("ERROR");
+            log.info(new ObjectMapper().writeValueAsString(response));
+            conexion.close();
+            return response;
+        }
 
         switch (estadoDeseado) {
             case "1":
@@ -270,7 +315,6 @@ public class BloqueoDesbloqueoTarjeta {
                 log.info(new ObjectMapper().writeValueAsString(response));
                 break;
         }
-        conexion.commit();
         conexion.close();
         return response;
     }

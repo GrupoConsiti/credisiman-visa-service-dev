@@ -101,7 +101,11 @@ public class Tarjetas {
     @JsonAlias("rombosDinero")
     public String rombosDinero;
 
-    @JsonProperty("fondosReservados")
-    @JsonAlias("fondosReservados")
-    public String fondosReservados;
+    @JsonProperty("fondosReservadosLocal")
+    @JsonAlias("fondosReservadosLocal")
+    public String fondosReservadosLocal;
+
+    @JsonProperty("fondosReservadosDolares")
+    @JsonAlias("fondosReservadosDolares")
+    public String fondosReservadosDolares;
 }
