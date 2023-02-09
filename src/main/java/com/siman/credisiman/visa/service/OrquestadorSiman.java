@@ -22,6 +22,7 @@ public class OrquestadorSiman {
     private static final String operationResponse = "ObtenerOrquestadorSimanResponse";
 
     public static XmlObject obtenerOrquestadorSiman(String servicio, String param1, String param2, String param3, String param4, String param5, String param6,
+                                                    String param7, String param8, String param9, String param10, String param11, String param12, String param13, String param14,
                                                     String remoteJndiSunnel, String remoteJndiOrion,
                                                     String siscardUrl, String siscardUser, String binCredisiman) {
         //validar campos requeridos
@@ -66,8 +67,56 @@ public class OrquestadorSiman {
                 case "ListadoTarjetas":
                     ListadoTarjetas.obtenerListadoTarjetas(param1, param2, remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman);
                     break;
+                // Revisar
                 case "ConsultaPolizas":
                     ConsultaPolizas.obtenerConsultaPolizas(param1, param2, remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman, param3);
+                    break;
+                case "ListarPlanesPorProducto":
+                    ListarPlanesPorProducto.obtenerListarPlanesPorProducto(param1, param2, remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman);
+                    break;
+                case "ConsultaEstadoCuenta":
+                    ConsultaEstadoCuenta.obtenerConsultaEstadoCuenta(param1, param2, param3, param4, remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman, param5, param6, param7, param8, param9);
+                    break;
+                case "ConsultaSubproductos":
+                    ConsultaSubproductos.obtenerConsultaSubproductos(param1, param2, remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman, param3, param4, param5, param6);
+                    break;
+                case "ListadoEstadosCuenta":
+                    ListadoEstadosCuentas.obtenerListadoEstadosCuenta(param1, param2, remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman, param3, param4, param5, param6, param7);
+                    break;
+                case "BloqueoDesbloqueoTarjeta":
+                    BloqueoDesbloqueoTarjeta.obtenerBloqueoDesbloqueoTarjeta(param1, param2, param3, param4, remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman,  param5);
+                    break;
+                case "CambioFechaCorte":
+                    CambioFechaCorte.obtenerCambioFechaCorte(param1, param2, param3, param4, remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman,  param5);
+                    break;
+                case "CambioPIN":
+                    CambioPIN.cambioPIN(param1, param2, param3, remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman, param4);
+                    break;
+                case "ModificarLimiteTarjeta":
+                    ModificarLimiteTarjeta.modificarLimiteTarjeta(param1, param2, param3, remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman, param4);
+                    break;
+                case "RegistroUsuario":
+                    RegistroUsuario.registroUsuario(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13, param14,
+                            remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman);
+                    break;
+                case "SolicitudReposicionTarjeta":
+                    SolicitudReposicionTarjeta.crearSolicitudReposicionTarjeta(param1, param2, param3, param4, remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman, param5);
+                    break;
+                case "SolicitudTrasladoCompraEnCuotas":
+                    SolicitudTrasladoCompraEnCuotas.obtenerSolicitudTrasladoCompraEnCuotas(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13,
+                            remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman);
+                    break;
+                case "EnvioCorreoElectronico":
+                    boolean param4bool = false;
+                    if(param4.equals("false")){
+                        param4bool = false;
+                    } else if(param4.equals("true")){
+                        param4bool = true;
+                    }
+                    EnvioCorreoElectronico.send(param1, param2, param3, param4bool, param5, param6, param7, param8, param9);
+                    break;
+                case "EstadoSolicitudTransladoCompraenCuotas":
+                    EstadoSolicitudTransladoCompraenCuotas.obtenerEstadoSolicitudTransladoCompraenCuotas(param1, param2, remoteJndiSunnel, remoteJndiOrion, siscardUrl, siscardUser, binCredisiman);
                     break;
             }
         } catch (Exception e) {
