@@ -1,23 +1,21 @@
 package com.siman.credisiman.visa.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.siman.credisiman.visa.utils.ConnectionHandler;
 import com.siman.credisiman.visa.utils.Message;
 import com.siman.credisiman.visa.utils.Utils;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.QName;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 
 public class SolicitudTrasladoCompraEnCuotas {
-    private static final Logger log = LoggerFactory.getLogger(SolicitudTrasladoCompraEnCuotas.class);
+    //private static Logger log = LoggerFactory.getLogger(SolicitudTrasladoCompraEnCuotas.class);
     private static final String namespace = "http://siman.com/SolicitudTrasladoCompraEnCuotas";
     private static final String operationResponse = "ObtenerSolicitudTrasladoCompraEnCuotasResponse";
 
@@ -26,7 +24,8 @@ public class SolicitudTrasladoCompraEnCuotas {
                                                                    String montoTransaccion, String fechaCompra, String codigoSucursal,
                                                                    String codigoMonedo, String tipoDocumento, String nombre,
                                                                    String remoteJndiSunnel, String remoteJndiOrion,
-                                                                   String siscardUrl, String siscardUser, String binCredisiman) {
+                                                                   String siscardUrl, String siscardUser, String binCredisiman,
+                                                                   String esquemaSunnel, String esquemaOrion, String esquemaEstcta) {
         //validar campos requeridos
         Utils utils = new Utils();
         Message message = new Message();
@@ -34,49 +33,48 @@ public class SolicitudTrasladoCompraEnCuotas {
         int resultado = 0;
 
         if (utils.validateNotNull(pais) || utils.validateNotEmpty(pais)) {
-            log.info("pais required");
+            //log.info("pais required");
             return message.genericMessage("ERROR", "400", "El campo pais es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(numeroTarjeta) || utils.validateNotEmpty(numeroTarjeta)) {
-            log.info("numero tarjeta required");
+            //log.info("numero tarjeta required");
             return message.genericMessage("ERROR", "400", "El campo número tarjeta es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(identificacion) || utils.validateNotEmpty(identificacion)) {
-            log.info("identificacion required");
+            //log.info("identificacion required");
             return message.genericMessage("ERROR", "400", "El campo identificacion es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(codigoProducto) || utils.validateNotEmpty(codigoProducto)) {
-            log.info("codigoProducto required");
+            //log.info("codigoProducto required");
             return message.genericMessage("ERROR", "400", "El campo codigo producto es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(codigoPlan) || utils.validateNotEmpty(codigoPlan)) {
-            log.info("codigoPlan required");
+            //log.info("codigoPlan required");
             return message.genericMessage("ERROR", "400", "El campo codigo plan es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(montoTransaccion) || utils.validateNotEmpty(montoTransaccion)) {
-            log.info("montoTransaccion required");
+            //log.info("montoTransaccion required");
             return message.genericMessage("ERROR", "400", "El campo monto transaccion es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(codigoSucursal) || utils.validateNotEmpty(codigoSucursal)) {
-            log.info("codigoSucursal required");
+            //log.info("codigoSucursal required");
             return message.genericMessage("ERROR", "400", "El campo codigo sucursal es obligatorio", namespace, operationResponse);
         }
 
+        String query1 = "SELECT MAX(ID_REL_PAYMENT) AS ID FROM " + esquemaOrion + ".T_RELOCATED_PAYMENT ";
 
-        String query1 = "SELECT MAX(ID_REL_PAYMENT) AS ID FROM ORIONREPOSV.T_RELOCATED_PAYMENT ";
+        String query2 = "SELECT MAX(ID_REL_PAYMENT) AS ID FROM " + esquemaOrion + ".T_RELOCATED_PAYMENT ";
 
-        String query2 = "SELECT MAX(ID_REL_PAYMENT) AS ID FROM ORIONREPOGT.T_RELOCATED_PAYMENT ";;
+        String query3 = "SELECT MAX(ID_REL_PAYMENT) AS ID FROM " + esquemaOrion + ".T_RELOCATED_PAYMENT ";
 
-        String query3 = "SELECT MAX(ID_REL_PAYMENT) AS ID FROM ORIONREPONI.T_RELOCATED_PAYMENT ";
-
-        String query4 = "SELECT MAX(ID_REL_PAYMENT) AS ID FROM ORIONREPOGT.T_RELOCATED_PAYMENT ";
+        String query4 = "SELECT MAX(ID_REL_PAYMENT) AS ID FROM " + esquemaOrion + ".T_RELOCATED_PAYMENT ";
 
         ConnectionHandler connectionHandler = new ConnectionHandler();
         Connection conexion = connectionHandler.getConnection(remoteJndiOrion);
-
         PreparedStatement sentencia = null;
+
         try {
-            switch (pais){
+            switch (pais) {
                 case "SV":
                     sentencia = conexion.prepareStatement(query1);
                     break;
@@ -90,25 +88,23 @@ public class SolicitudTrasladoCompraEnCuotas {
                     sentencia = conexion.prepareStatement(query4);
                     break;
             }
-
             ResultSet rs = sentencia.executeQuery();
-
 
             while (rs.next()) {
                 id = rs.getInt("ID");
             }
             sentencia.close();
             rs.close();
-            if (id >0 ) {
+            if (id > 0) {
                 String tarjeta = null;
                 if (numeroTarjeta != null) {
                     if (numeroTarjeta.length() > 6) {
                         tarjeta = Utils.obtenerTarjeta(numeroTarjeta, 6);
                     }
                 }
-                log.info("insertando a la db");
+                //log.info("insertando a la db");
                 id++;
-                String queryInsertSV= " INSERT INTO ORIONREPOSV.T_RELOCATED_PAYMENT " +
+                String queryInsertSV = " INSERT INTO " + esquemaOrion + ".T_RELOCATED_PAYMENT " +
                         "   (ID_REL_PAYMENT, COUNTRY_CODE, DOCUMENT_TYPE, DOCUMENT_NUMBER, CARD_DIGITS,  " +
                         "    TELEPHONE, ID_PLANS_PRODUCT, BUY_DATE, BRANCHOFFICEID, COMMENTS,  " +
                         "    STATE, DATE_CREATION, UPDATE_DATE, USER_UPDATE, MONTO,  " +
@@ -118,7 +114,7 @@ public class SolicitudTrasladoCompraEnCuotas {
                         "    1, SYSDATE , NULL, NULL, ?,  " + //estado, fecha de creacion, fecha de actualicacion, usuario, monto
                         "    ? , ? , ? ) "; //correo, nombre , codigomoneda
 
-                String queryInsertGT= " INSERT INTO ORIONREPOGT.T_RELOCATED_PAYMENT " +
+                String queryInsertGT = " INSERT INTO " + esquemaOrion + ".T_RELOCATED_PAYMENT " +
                         "   (ID_REL_PAYMENT, COUNTRY_CODE, DOCUMENT_TYPE, DOCUMENT_NUMBER, CARD_DIGITS,  " +
                         "    TELEPHONE, ID_PLANS_PRODUCT, BUY_DATE, BRANCHOFFICEID, COMMENTS,  " +
                         "    STATE, DATE_CREATION, UPDATE_DATE, USER_UPDATE, MONTO,  " +
@@ -128,7 +124,7 @@ public class SolicitudTrasladoCompraEnCuotas {
                         "    1, SYSDATE , NULL, NULL, ?,  " + //estado, fecha de creacion, fecha de actualicacion, usuario, monto
                         "    ? , ? , ? ) "; //correo, nombre , codigomoneda
 
-                String queryInsertNI= " INSERT INTO ORIONREPONI.T_RELOCATED_PAYMENT " +
+                String queryInsertNI = " INSERT INTO " + esquemaOrion + ".T_RELOCATED_PAYMENT " +
                         "   (ID_REL_PAYMENT, COUNTRY_CODE, DOCUMENT_TYPE, DOCUMENT_NUMBER, CARD_DIGITS,  " +
                         "    TELEPHONE, ID_PLANS_PRODUCT, BUY_DATE, BRANCHOFFICEID, COMMENTS,  " +
                         "    STATE, DATE_CREATION, UPDATE_DATE, USER_UPDATE, MONTO,  " +
@@ -138,7 +134,7 @@ public class SolicitudTrasladoCompraEnCuotas {
                         "    1, SYSDATE , NULL, NULL, ?,  " + //estado, fecha de creacion, fecha de actualicacion, usuario, monto
                         "    ? , ? , ? ) ";
 
-                String queryInsertCR= " INSERT INTO ORIONREPOCR.T_RELOCATED_PAYMENT " +
+                String queryInsertCR = " INSERT INTO " + esquemaOrion + ".T_RELOCATED_PAYMENT " +
                         "   (ID_REL_PAYMENT, COUNTRY_CODE, DOCUMENT_TYPE, DOCUMENT_NUMBER, CARD_DIGITS,  " +
                         "    TELEPHONE, ID_PLANS_PRODUCT, BUY_DATE, BRANCHOFFICEID, COMMENTS,  " +
                         "    STATE, DATE_CREATION, UPDATE_DATE, USER_UPDATE, MONTO,  " +
@@ -161,14 +157,14 @@ public class SolicitudTrasladoCompraEnCuotas {
                         preparedStatement.setString(4, identificacion);
                         preparedStatement.setString(5, tarjeta);
                         preparedStatement.setString(6, telefono);
-                        preparedStatement.setInt(7,  Integer.parseInt(codigoProducto));
+                        preparedStatement.setInt(7, Integer.parseInt(codigoProducto));
                         preparedStatement.setDate(8, new java.sql.Date(new SimpleDateFormat("YYYYMMDD").parse(fechaCompra).getTime()));
                         preparedStatement.setString(9, codigoSucursal);
                         preparedStatement.setString(10, "");
                         preparedStatement.setDouble(11, Double.parseDouble(montoTransaccion));
                         preparedStatement.setString(12, correo);
                         preparedStatement.setString(13, nombre);
-                        preparedStatement.setInt(14,  Integer.parseInt(codigoMonedo));
+                        preparedStatement.setInt(14, Integer.parseInt(codigoMonedo));
                         resultado = preparedStatement.executeUpdate();
                         preparedStatement.close();
                         break;
@@ -180,14 +176,14 @@ public class SolicitudTrasladoCompraEnCuotas {
                         preparedStatement.setString(4, identificacion);
                         preparedStatement.setString(5, tarjeta);
                         preparedStatement.setString(6, telefono);
-                        preparedStatement.setInt(7,  Integer.parseInt(codigoProducto));
+                        preparedStatement.setInt(7, Integer.parseInt(codigoProducto));
                         preparedStatement.setDate(8, new java.sql.Date(new SimpleDateFormat("YYYYMMDD").parse(fechaCompra).getTime()));
                         preparedStatement.setString(9, codigoSucursal);
                         preparedStatement.setString(10, "");
                         preparedStatement.setDouble(11, Double.parseDouble(montoTransaccion));
                         preparedStatement.setString(12, correo);
                         preparedStatement.setString(13, nombre);
-                        preparedStatement.setInt(14,  Integer.parseInt(codigoMonedo));
+                        preparedStatement.setInt(14, Integer.parseInt(codigoMonedo));
                         resultado = preparedStatement.executeUpdate();
                         preparedStatement.close();
                         break;
@@ -199,50 +195,50 @@ public class SolicitudTrasladoCompraEnCuotas {
                         preparedStatement.setString(4, identificacion);
                         preparedStatement.setString(5, tarjeta);
                         preparedStatement.setString(6, telefono);
-                        preparedStatement.setInt(7,  Integer.parseInt(codigoProducto));
+                        preparedStatement.setInt(7, Integer.parseInt(codigoProducto));
                         preparedStatement.setDate(8, new java.sql.Date(new SimpleDateFormat("YYYYMMDD").parse(fechaCompra).getTime()));
                         preparedStatement.setString(9, codigoSucursal);
                         preparedStatement.setString(10, "");
                         preparedStatement.setDouble(11, Double.parseDouble(montoTransaccion));
                         preparedStatement.setString(12, correo);
                         preparedStatement.setString(13, nombre);
-                        preparedStatement.setInt(14,  Integer.parseInt(codigoMonedo));
+                        preparedStatement.setInt(14, Integer.parseInt(codigoMonedo));
                         resultado = preparedStatement.executeUpdate();
                         preparedStatement.close();
                         break;
                     case "CR":
+                        preparedStatement = conexion.prepareStatement(queryInsertCR);
                         preparedStatement.setInt(1, id);
                         preparedStatement.setString(2, pais);
                         preparedStatement.setString(3, tipoDocumento);
                         preparedStatement.setString(4, identificacion);
                         preparedStatement.setString(5, tarjeta);
                         preparedStatement.setString(6, telefono);
-                        preparedStatement.setInt(7,  Integer.parseInt(codigoProducto));
+                        preparedStatement.setInt(7, Integer.parseInt(codigoProducto));
                         preparedStatement.setDate(8, new java.sql.Date(new SimpleDateFormat("YYYYMMDD").parse(fechaCompra).getTime()));
                         preparedStatement.setString(9, codigoSucursal);
                         preparedStatement.setString(10, "");
                         preparedStatement.setDouble(11, Double.parseDouble(montoTransaccion));
                         preparedStatement.setString(12, correo);
                         preparedStatement.setString(13, nombre);
-                        preparedStatement.setInt(14,  Integer.parseInt(codigoMonedo));
+                        preparedStatement.setInt(14, Integer.parseInt(codigoMonedo));
                         resultado = preparedStatement.executeUpdate();
                         preparedStatement.close();
                         break;
                 }
 
-            }else{
+            } else {
                 return message.genericMessage("ERROR", "600",
                         "Error general contacte al administrador del sistema...", namespace, operationResponse);
             }
 
             conexion.commit();
             conexion.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return message.genericMessage("ERROR", "600",
                     "Error general contacte al administrador del sistema...", namespace, operationResponse);
         }
-
 
         if (resultado > 0) {
             XmlObject result = XmlObject.Factory.newInstance();
@@ -255,12 +251,11 @@ public class SolicitudTrasladoCompraEnCuotas {
             cursor.insertElementWithText(new QName(namespace, "statusMessage"), "Proceso exitoso");
             cursor.insertElementWithText(new QName(namespace, "numeroSolicitud"), String.valueOf(id));
             cursor.toParent();
-            log.info("response = [" + result + "]");
+            //log.info("response = [" + result + "]");
             return result;
-        }else{
+        } else {
             return message.genericMessage("ERROR", "600",
                     "Error general contacte al administrador del sistema...", namespace, operationResponse);
         }
     }
 }
-

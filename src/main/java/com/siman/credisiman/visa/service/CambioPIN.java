@@ -9,13 +9,13 @@ import com.siman.credisiman.visa.utils.Utils;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.QName;
 
 public class CambioPIN {
-    private static final Logger log = LoggerFactory.getLogger(CambioPIN.class);
+    //private static Logger log = LoggerFactory.getLogger(CambioPIN.class);
     private static final String namespace = "http://siman.com/CambioPIN";
     private static final String operationResponse = "CambioPINResponse";
 
@@ -23,10 +23,8 @@ public class CambioPIN {
                                       String remoteJndiOrion, String siscardUrl, String siscardUser, String binCredisiman, String tipoTarjeta) {
 
         //OBTENER DATOS
-
         Utils utils = new Utils();
         Message message = new Message();
-
 
         //validar campos requeridos
         if (utils.validateNotNull(pais) || utils.validateNotEmpty(pais)) {
@@ -39,10 +37,9 @@ public class CambioPIN {
             return message.genericMessage("ERROR", "400", "El campo NIP monto es obligatorio", namespace, operationResponse);
         }
 
-
         //validar longitudes
         if (!utils.validateLongitude(pais, 3)) {
-            log.info("pais, size overload");
+            //log.info("pais, size overload");
             return message.genericMessage("ERROR", "400", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
         }
 
@@ -59,20 +56,26 @@ public class CambioPIN {
                 case "V":
                     //datos tarjeta visa
                     CambioPinResponse response2 = obtenerDatosEvertec(pais, numeroTarjeta, nip, siscardUrl);
+                    if (response2.getCode().equals("OSB-380000")) {
+                        //log.info(message.genericMessage("ERROR", "400",
+                        //"Error de comunicación con siscard: " + response2.getMessage(), namespace, operationResponse).toString());
+                        return message.genericMessage("ERROR", "400",
+                                "Error de comunicación con siscard: " + response2.getMessage(), namespace, operationResponse);
+                    }
                     if (response2 != null) {
                         return estructura(response2);
                     }
-                default: message.genericMessage("ERROR", "400", "Tipo tarjeta no valida", namespace, operationResponse);
+                default:
+                    message.genericMessage("ERROR", "400", "Tipo tarjeta no valida", namespace, operationResponse);
                     break;
             }
         } catch (Exception e) {
             e.printStackTrace();
             return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);
         }
-        log.info("CambioPIN response = [" + message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse) + "]");
+        //log.info("CambioPIN response = [" + message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse) + "]");
         return message.genericMessage("ERROR", "400", "No se encontro el numero de tarjeta", namespace, operationResponse);
     }
-
 
     public static XmlObject estructura(CambioPinResponse response1) {
         XmlObject result = XmlObject.Factory.newInstance();
@@ -93,17 +96,17 @@ public class CambioPIN {
             cursor.insertElementWithText(new QName(namespace, "statusCode"), codigo);
             cursor.insertElementWithText(new QName(namespace, "status"), estado);
             cursor.insertElementWithText(new QName(namespace, "statusMessage"), mensaje);
-        } else if(response1.getCode().equals("200")) {
+        } else if (response1.getCode().equals("200")) {
             cursor.insertElementWithText(new QName(namespace, "statusCode"), "00");
             cursor.insertElementWithText(new QName(namespace, "status"), "SUCCESS");
             cursor.insertElementWithText(new QName(namespace, "statusMessage"), "Operación Exitosa");
-        }else {
+        } else {
             cursor.insertElementWithText(new QName(namespace, "statusCode"), response1.getCode());
             cursor.insertElementWithText(new QName(namespace, "status"), "ERROR");
             cursor.insertElementWithText(new QName(namespace, "statusMessage"), response1.getRespuestas().get(0).getStatusMessage());
         }
         cursor.toParent();
-        log.info("obtenerCambioPIN response = [" + result.toString() + "]");
+        //log.info("obtenerCambioPIN response = [" + result.toString() + "]");
         return result;
     }
 
@@ -128,7 +131,6 @@ public class CambioPIN {
         response1 = new ObjectMapper()
                 .readValue(response.toString(), CambioPinResponse.class);
 
-        log.info(new ObjectMapper().writeValueAsString(response1));
         return response1;
     }
 }

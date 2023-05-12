@@ -12,7 +12,7 @@ public class ListadoSucursalesTest {
     @Test
     public void obtenerConsultaMovimientosPrivadaGTOk() {
         XmlObject result = ListadoSucursales.obtenerListadoSucursales("SV", "jdbc/SUNTSTGT", "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion",
-                "usuario", "600831, 600831, 600831");
+                "usuario", "600831, 600831, 600831", "", "ORIONREPOSV", "");
 
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());

@@ -11,10 +11,10 @@ public class BloqueoDesbloqueoTarjetaTest {
 
     @Test
     public void bloquearTarjetaTemporalOkSV() {
-        XmlObject result = BloqueoDesbloqueoTarjeta.obtenerBloqueoDesbloqueoTarjeta("SV", "6008315500062519",
-                "1", "M6", "jdbc/SUNTST", "jdbc/ORIONREPOSV",
+        XmlObject result = BloqueoDesbloqueoTarjeta.obtenerBloqueoDesbloqueoTarjeta("SV", "4573840039507007",
+                "28", "M6", "jdbc/SUNTST", "jdbc/ORIONREPOSV",
                 "http://soauat.siman.com:7003/v1/orion", "usuario", "600831, 600831, 600831",
-                "P");
+                "V", "SUNNELP3","","");
 
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());
@@ -27,7 +27,7 @@ public class BloqueoDesbloqueoTarjetaTest {
         XmlObject result = BloqueoDesbloqueoTarjeta.obtenerBloqueoDesbloqueoTarjeta("SV", "6008315500062519",
                 "0", "M6", "jdbc/SUNTST", "jdbc/ORIONREPOSV",
                 "http://soauat.siman.com:7003/v1/orion", "usuario", "600831, 600831, 600831",
-                "P");
+                "P", "SUNNELP3","","");
 
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());
@@ -40,7 +40,7 @@ public class BloqueoDesbloqueoTarjetaTest {
         XmlObject result = BloqueoDesbloqueoTarjeta.obtenerBloqueoDesbloqueoTarjeta("GT", "6008320201460400",
                 "1", "M6", "jdbc/SUNTSTGT", "jdbc/ORIONREPOSV",
                 "http://soauat.siman.com:7003/v1/orion", "usuario", "600831, 600831, 600831",
-                "P");
+                "P", "SUNNELGTP4","","");
 
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());
@@ -53,7 +53,7 @@ public class BloqueoDesbloqueoTarjetaTest {
         XmlObject result = BloqueoDesbloqueoTarjeta.obtenerBloqueoDesbloqueoTarjeta("GT", "6008320201460400",
                 "0", "M6", "jdbc/SUNTSTGT", "jdbc/ORIONREPOSV",
                 "http://soauat.siman.com:7003/v1/orion", "usuario", "600831, 600831, 600831",
-                "P");
+                "P", "SUNNELGTP4","","");
 
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());
@@ -66,7 +66,7 @@ public class BloqueoDesbloqueoTarjetaTest {
         XmlObject result = BloqueoDesbloqueoTarjeta.obtenerBloqueoDesbloqueoTarjeta("NI", "6275815100001870",
                 "1", "M6", "jdbc/SUNTSTNI", "jdbc/ORIONREPOSV",
                 "http://soauat.siman.com:7003/v1/orion", "usuario", "600831, 600831, 600831",
-                "P");
+                "P", "SUNNELNIP1","","");
 
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());
@@ -79,7 +79,7 @@ public class BloqueoDesbloqueoTarjetaTest {
         XmlObject result = BloqueoDesbloqueoTarjeta.obtenerBloqueoDesbloqueoTarjeta("NI", "6275815100001870",
                 "0", "M6", "jdbc/SUNTSTNI", "jdbc/ORIONREPOSV",
                 "http://soauat.siman.com:7003/v1/orion", "usuario", "600831, 600831, 600831",
-                "P");
+                "P", "SUNNELNIP1","","");
 
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());
@@ -92,7 +92,7 @@ public class BloqueoDesbloqueoTarjetaTest {
         XmlObject result = BloqueoDesbloqueoTarjeta.obtenerBloqueoDesbloqueoTarjeta("CR", "6275804000061457",
                 "1", "M6", "jdbc/SUNTSTCR", "jdbc/ORIONREPOSV",
                 "http://soauat.siman.com:7003/v1/orion", "usuario", "600831, 600831, 600831",
-                "P");
+                "P", "SUNNELCRP4","","");
 
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());
@@ -105,7 +105,7 @@ public class BloqueoDesbloqueoTarjetaTest {
         XmlObject result = BloqueoDesbloqueoTarjeta.obtenerBloqueoDesbloqueoTarjeta("CR", "6275804000061457",
                 "0", "M6", "jdbc/SUNTSTCR", "jdbc/ORIONREPOSV",
                 "http://soauat.siman.com:7003/v1/orion", "usuario", "600831, 600831, 600831",
-                "P");
+                "P", "SUNNELCRP4","","");
 
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());

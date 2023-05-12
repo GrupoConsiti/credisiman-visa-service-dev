@@ -12,12 +12,12 @@ public class SolicitudTrasladoCompraEnCuotasTest {
     @Test
     public void obtenerConsultaMovimientosPrivadaGTOk() {
         XmlObject result = SolicitudTrasladoCompraEnCuotas.obtenerSolicitudTrasladoCompraEnCuotas("SV",
-                "442427223", "6008314502274917","carlos_penate@siman.com",
-                "22224444","57","63","0.10","20230126",
-                "02","840","DUI","Carlos Salazar",
+                "442427223", "6008314502274917", "rafael_najarro@siman.com",
+                "22224444", "57", "63", "0.10", "20230126",
+                "02", "840", "DUI", "Rafael Najarro",
                 "jdbc/SUNTSTGT", "jdbc/ORIONREPOSV",
                 "http://soauat.siman.com:7003/v1/orion",
-                "usuario", "600831, 600831, 600831");
+                "usuario", "600831, 600831, 600831", "", "ORIONREPOSV", "");
 
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());

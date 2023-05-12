@@ -11,9 +11,7 @@ public class ConsultaSaldoMonederoTest {
 
     @Test
     public void obtenerDatosClienteOk() {
-        XmlObject result = ConsultaSaldoMonedero.obtenerConsultaSaldoMonedero("SV", "4000123456780000", "18140",
-                "20211009", "P", "45738400", "jndi/SimacSV", "jdbc/ORIONREPOSV",
-                "http://soauat.siman.com:7003/v1/orion", "usuario", "600831, 600831, 600831");
+        XmlObject result = ConsultaSaldoMonedero.obtenerConsultaSaldoMonedero("SV", "4000123456780000", "18140","20211009","jndi/SimacSV", "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion", "usuario", "600831, 600831, 600831","45738400", "P");
 
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());

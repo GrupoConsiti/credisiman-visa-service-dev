@@ -11,9 +11,9 @@ public class ListarPlanesPorProductoTest {
 
     @Test
     public void obtenerListarPlanesPorProductoOk() {
-        XmlObject result = ListarPlanesPorProducto.obtenerListarPlanesPorProducto("SV","45738400",
+        XmlObject result = ListarPlanesPorProducto.obtenerListarPlanesPorProducto("SV", "45738400",
                 "jdbc/SUNTSTGT", "jdbc/ORIONREPOSV", "http://soauat.siman.com:7003/v1/orion",
-                "usuario", "600831, 600831, 600831");
+                "usuario", "600831, 600831, 600831", "","ORIONREPOSV","");
 
         //Status
         assertEquals("00", ((SimpleValue) result.selectPath("declare namespace ns='" + NS + "' " + ".//ns:statusCode")[0]).getStringValue());

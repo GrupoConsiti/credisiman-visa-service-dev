@@ -3,7 +3,6 @@ package com.siman.credisiman.visa.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
-
 import com.siman.credisiman.visa.dto.email.EmailTo;
 import com.siman.credisiman.visa.dto.email.MandrilResponse;
 import com.siman.credisiman.visa.utils.Message;
@@ -12,8 +11,8 @@ import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
@@ -22,44 +21,47 @@ import java.util.List;
 
 public class EnvioCorreoElectronico {
 
-    private static final Logger log = LoggerFactory.getLogger(EnvioCorreoElectronico.class);
+    //private static Logger log = LoggerFactory.getLogger(EnvioCorreoElectronico.class);
     private static final String namespace = "http://siman.com/EnvioCorreoElectronico";
     private static final String operationResponse = "ObtenerEnvioCorreoElectronicoResponse";
 
     public static XmlObject send(String correoOrigen, String nombreOrigen, String asunto,
                                  boolean flagImportante, String html, String listaCorreos,
                                  String urlMandril, String apiKey, String mandrilTag) {
+
         //validar campos requeridos
         Utils utils = new Utils();
         Message message = new Message();
 
         if (utils.validateNotNull(correoOrigen) || utils.validateNotEmpty(correoOrigen)) {
-            log.info("correo origen required");
+            //log.info("correo origen required");
             return message.genericMessage("ERROR", "400", "El campo correo origen es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(nombreOrigen) || utils.validateNotEmpty(nombreOrigen)) {
-            log.info("nombre origen required");
+            //log.info("nombre origen required");
             return message.genericMessage("ERROR", "400", "El campo nombre origen es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(asunto) || utils.validateNotEmpty(asunto)) {
-            log.info("asunto required");
+            //log.info("asunto required");
             return message.genericMessage("ERROR", "400", "El campo asunto es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(html) || utils.validateNotEmpty(html)) {
-            log.info("html required");
+            //log.info("html required");
             return message.genericMessage("ERROR", "400", "El campo html es obligatorio", namespace, operationResponse);
+        }
+        if (utils.validateNotNull(listaCorreos) || utils.validateNotEmpty(listaCorreos)) {
+            //log.info("correos destino required");
+            return message.genericMessage("ERROR", "025", "El campo correos destino es obligatorio", namespace, operationResponse);
         }
 
         try {
-
             String lista[] = listaCorreos.split(";");
             String usuario[];
-            List<EmailTo> correos= new ArrayList<>();
+            List<EmailTo> correos = new ArrayList<>();
             EmailTo emailT = new EmailTo();
 
-            for (String s: lista) {
-                usuario =  s.split(",");
-
+            for (String s : lista) {
+                usuario = s.split(",");
                 emailT = new EmailTo();
                 emailT.setName(usuario[1].trim());
                 emailT.setEmail(usuario[0].trim());
@@ -71,9 +73,7 @@ public class EnvioCorreoElectronico {
             JSONArray to = new JSONArray();
             JSONArray tags = new JSONArray();
 
-
-            json.put("key", apiKey)
-                    .put("message", msg);
+            json.put("key", apiKey).put("message", msg);
 
             msg.put("html", html)
                     .put("subject", asunto)
@@ -93,8 +93,6 @@ public class EnvioCorreoElectronico {
             tags.put(mandrilTag);
             msg.put("tags", tags);
 
-            log.info(json.toString());
-
             HttpResponse<String> jsonResponse //realizar petición demiante unirest
                     = Unirest.post(urlMandril)
                     .header("Content-Type", "application/json")
@@ -103,14 +101,10 @@ public class EnvioCorreoElectronico {
 
             //capturar respuesta
             MandrilResponse response1;
-            log.info(jsonResponse
-                    .getBody().replace("[","").replace("]",""));
             JSONObject response = new JSONObject(jsonResponse
-                    .getBody().replace("[","").replace("]",""));
+                    .getBody().replace("[", "").replace("]", ""));
             response1 = new ObjectMapper()
                     .readValue(response.toString(), MandrilResponse.class);
-
-            log.info("respuesta: " + new ObjectMapper().writeValueAsString(response1));
 
             String statusCode;
             String status;
@@ -151,9 +145,8 @@ public class EnvioCorreoElectronico {
             cursor.insertElementWithText(new QName(namespace, "statusMessage"), statusMessage);
             cursor.toParent();
 
-            log.info("obtenerEnvioCorreoElectronico response = [" + result + "]");
+            //log.info("obtenerEnvioCorreoElectronico response = [" + result + "]");
             return result;
-
         } catch (Exception e) {
             e.printStackTrace();
             return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);

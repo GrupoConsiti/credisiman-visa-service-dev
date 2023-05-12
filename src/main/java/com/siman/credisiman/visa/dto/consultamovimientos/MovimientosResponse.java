@@ -41,6 +41,10 @@ public class MovimientosResponse {
     @JsonAlias("descripcionComercio")
     private String descripcionComercio;
 
+    @JsonProperty("tipoMovimientoTH")
+    @JsonAlias("tipoMovimientoTH")
+    private String tipoMovimientoTH;
+
     //others
 
     @JsonProperty("numeroDocumento1")

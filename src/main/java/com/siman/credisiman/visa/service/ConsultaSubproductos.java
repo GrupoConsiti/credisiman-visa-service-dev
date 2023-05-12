@@ -13,15 +13,15 @@ import com.siman.credisiman.visa.utils.Utils;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ConsultaSubproductos {
-    private static final Logger log = LoggerFactory.getLogger(ConsultaSubproductos.class);
+    //private static Logger log = LoggerFactory.getLogger(ConsultaSubproductos.class);
     private static final String namespace = "http://siman.com/ConsultaSubproductos";
     private static final String operationResponse = "ObtenerConsultaSubproductosResponse";
 
@@ -29,6 +29,7 @@ public class ConsultaSubproductos {
                                                         String remoteJndiOrion, String siscardUrl, String siscardUser,
                                                         String binCredisiman, String tipoTarjeta,
                                                         String urlCrm, String usuarioCrm, String passwordCrm) {
+
         Utils utils = new Utils();
         Message message = new Message();
 
@@ -49,11 +50,10 @@ public class ConsultaSubproductos {
         }
         //OBTENER DATOS TARJETA CREDISIMAN
         try {
-
             switch (tipoTarjeta) {
                 case "P":
                     //datos tarjeta privada
-                    log.info("tipo tarjeta: Privada");
+                    //log.info("tipo tarjeta: Privada");
                     ConsultaSubproductosResponse response1 = null;
                     response1 = obtenerSubProductosPrivada(usuarioCrm, passwordCrm, urlCrm, numeroTarjeta, pais);
                     if (response1 != null) {
@@ -63,25 +63,30 @@ public class ConsultaSubproductos {
                     }
 
                 case "V":
-                    log.info("tipo tarjeta: Visa");
+                    //log.info("tipo tarjeta: Visa");
                     //datos tarjeta visa
                     ConsultaSubproductosResponse response2 = obtenerDatosSiscard(pais, numeroTarjeta, siscardUrl);
+                    if (response2.getCode().equals("OSB-380000")) {
+                        //log.info(message.genericMessage("ERROR", "400",
+                        //"Error de comunicación con siscard: " + response2.getMessage(), namespace, operationResponse).toString());
+                        return message.genericMessage("ERROR", "400",
+                                "Error de comunicación con siscard: " + response2.getMessage(), namespace, operationResponse);
+                    }
+
                     if (response2 != null) {
                         return estructura(response2);
                     } else {
                         return message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse);
                     }
-
             }
         } catch (Exception e) {
             e.printStackTrace();
-            log.info(e.getMessage());
+            //log.info(e.getMessage());
             return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);
         }
 
-        log.info("NOT FOUND");
+        //log.info("NOT FOUND");
         return message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse);
-
     }
 
     public static XmlObject estructura(ConsultaSubproductosResponse response1) {
@@ -98,7 +103,6 @@ public class ConsultaSubproductos {
 
         for (int i = 0; i < response1.subproductos.size(); i++) {
             SubProducto subproductos = response1.subproductos.get(i);
-
             cursor.beginElement(new QName(namespace, "subproductos"));
             cursor.insertElementWithText(new QName(namespace, "tipoSubproducto"), subproductos.getTipoSubProducto());
             cursor.insertElementWithText(new QName(namespace, "fechaCompra"), subproductos.getFechaCreacion());
@@ -109,9 +113,8 @@ public class ConsultaSubproductos {
             cursor.insertElementWithText(new QName(namespace, "saldoActual"), subproductos.getSaldoActual());
             cursor.toParent();
         }
-
         cursor.toParent();
-        log.info("obtenerSubproductos response = [" + result + "]");
+        //log.info("obtenerSubproductos response = [" + result + "]");
         return result;
     }
 
@@ -143,6 +146,7 @@ public class ConsultaSubproductos {
     public static ConsultaSubproductosResponse obtenerSubProductosPrivada(String usuarioCrm, String passwordCrm,
                                                                           String urlCrm, String numeroTarjeta,
                                                                           String pais) throws Exception {
+
         LoginResponse response = new LoginResponse();
         response = loginCrm(usuarioCrm, passwordCrm, urlCrm);
         ValidateToken validation = new ValidateToken();
@@ -151,7 +155,7 @@ public class ConsultaSubproductos {
         if (response.getAccess_token() != null) {
             validation = ValidateloginCrm(response.getAccess_token(), urlCrm);
             if (validation.getResponse().getError_message().equals("Sucess")) {
-                log.info("token valid");
+                //log.info("token valid");
                 subproductos = consultaproductosCrm(pais, numeroTarjeta, response.getAccess_token(), urlCrm);
 
                 if (subproductos.getErrorMessage().equals("No data found")) {
@@ -165,7 +169,7 @@ public class ConsultaSubproductos {
                 List<SubProducto> subProductosList = new ArrayList<>();
 
                 //VALIDAR SI LA RESPUESTA DEVUELVE PRODUCTOS
-                if(subproductos.getOtherProducts().size() >0) {
+                if (subproductos.getOtherProducts().size() > 0) {
                     consultaSubproductosResponse.setStatus("SUCCESS");
                     consultaSubproductosResponse.setStatusMessage("Proceso exitoso");
                     consultaSubproductosResponse.setStatusCode("00");
@@ -183,7 +187,7 @@ public class ConsultaSubproductos {
                 consultaSubproductosResponse.setSubproductos(subProductosList);
                 return consultaSubproductosResponse;
             } else {
-                log.info("invalid token");
+                //log.info("invalid token");
                 subproductos = new Productos();
                 subproductos.setErrorMessage(validation.getResponse().getError_message());
                 subproductos.setErrorMessage(validation.getResponse().getError_code());

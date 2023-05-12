@@ -13,47 +13,65 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ConsultaDatosClienteResponse {
 
-    @JsonProperty("statusCode") @JsonAlias("statusCode")
+    @JsonProperty("statusCode")
+    @JsonAlias("statusCode")
     private String statusCode;
 
-    @JsonProperty("status") @JsonAlias("status")
+    @JsonProperty("status")
+    @JsonAlias("status")
     private String status;
 
-    @JsonProperty("statusMessage") @JsonAlias("statusMessage")
+    @JsonProperty("statusMessage")
+    @JsonAlias("statusMessage")
     private String statusMessage;
 
-    @JsonProperty("nombre")  @JsonAlias("nombre")
+    @JsonProperty("nombre")
+    @JsonAlias("nombre")
     private String nombre;
 
-    @JsonProperty("segundoNombre")  @JsonAlias("segundoNombre")
+    @JsonProperty("segundoNombre")
+    @JsonAlias("segundoNombre")
     private String segundoNombre;
 
-    @JsonProperty("primerApellido")  @JsonAlias("primerApellido")
+    @JsonProperty("primerApellido")
+    @JsonAlias("primerApellido")
     private String primerApellido;
 
-    @JsonProperty("segundoApellido") @JsonAlias("segundoApellido")
+    @JsonProperty("segundoApellido")
+    @JsonAlias("segundoApellido")
     private String segundoApellido;
 
-    @JsonProperty("apellidoCasada")  @JsonAlias("apellidoCasada")
+    @JsonProperty("apellidoCasada")
+    @JsonAlias("apellidoCasada")
     private String apellidoCasada;
 
-    @JsonProperty("tipoIdentificacion")  @JsonAlias("tipoIdentificacion")
+    @JsonProperty("tipoIdentificacion")
+    @JsonAlias("tipoIdentificacion")
     private String tipoIdentificacion;
 
-    @JsonProperty("identificacion") @JsonAlias("identificacion")
+    @JsonProperty("identificacion")
+    @JsonAlias("identificacion")
     private String identificacion;
 
-    @JsonProperty("correoElectronico") @JsonAlias("correoElectronico")
+    @JsonProperty("correoElectronico")
+    @JsonAlias("correoElectronico")
     private String correoElectronico;
 
-    @JsonProperty("celular")  @JsonAlias("celular")
+    @JsonProperty("celular")
+    @JsonAlias("celular")
     private String celular;
 
-    @JsonProperty("direccion")  @JsonAlias("direccion")
+    @JsonProperty("direccion")
+    @JsonAlias("direccion")
     private String direccion;
 
-    @JsonProperty("direccionPatrono") @JsonAlias("direccionPatrono")
+    @JsonProperty("direccionPatrono")
+    @JsonAlias("direccionPatrono")
     private String direccionPatrono;
+
+    @JsonProperty("correoSiscard")
+    @JsonAlias("correoSiscard")
+    private String correoSiscard;
 
     //others
     private String code;

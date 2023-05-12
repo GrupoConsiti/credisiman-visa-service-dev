@@ -6,8 +6,8 @@ import com.siman.credisiman.visa.utils.Message;
 import com.siman.credisiman.visa.utils.Utils;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.QName;
 import java.sql.Connection;
@@ -17,24 +17,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ListarPlanesPorProducto {
-    private static final Logger log = LoggerFactory.getLogger(ListarPlanesPorProducto.class);
+    //private static Logger log = LoggerFactory.getLogger(ListarPlanesPorProducto.class);
     private static final String namespace = "http://siman.com/ListarPlanesPorProducto";
     private static final String operationResponse = "ObtenerListarPlanesPorProductoResponse";
 
     public static XmlObject obtenerListarPlanesPorProducto(String pais, String codigoProducto,
                                                            String remoteJndiSunnel, String remoteJndiOrion,
-                                                           String siscardUrl, String siscardUser, String binCredisiman) {
+                                                           String siscardUrl, String siscardUser, String binCredisiman,
+                                                           String esquemaSunnel, String esquemaOrion, String esquemaEstcta) {
+
         //validar campos requeridos
         Utils utils = new Utils();
         Message message = new Message();
         List<Plan> listadoPlanes = new ArrayList<>();
 
         if (utils.validateNotNull(pais) || utils.validateNotEmpty(pais)) {
-            log.info("pais required");
+            //log.info("pais required");
             return message.genericMessage("ERROR", "400", "El campo pais es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(codigoProducto) || utils.validateNotEmpty(codigoProducto)) {
-            log.info("codigoProducto required");
+            //log.info("codigoProducto required");
             return message.genericMessage("ERROR", "400", "El campo codigo producto es obligatorio", namespace, operationResponse);
         }
 
@@ -47,25 +49,24 @@ public class ListarPlanesPorProducto {
         cursor.insertElementWithText(new QName(namespace, "status"), "SUCCESS");
         cursor.insertElementWithText(new QName(namespace, "statusMessage"), "Proceso exitoso");
 
-
-        String query1 = " SELECT TP.ID_PLAN, TP.NAME_PLAN FROM T_PLAN TP, T_PLANS_PRODUCTS TPP " +
+        String query1 = " SELECT TP.ID_PLAN, TP.NAME_PLAN FROM " + esquemaOrion + ".T_PLAN TP, " + esquemaOrion + ".T_PLANS_PRODUCTS TPP " +
                 "        WHERE TP.ID_PLAN = TPP.ID_PLAN  AND TPP.ID_TPRODUCT = ?  ";
 
-        String query2 = " SELECT TP.ID_PLAN, TP.NAME_PLAN FROM T_PLAN TP, T_PLANS_PRODUCTS TPP " +
+        String query2 = " SELECT TP.ID_PLAN, TP.NAME_PLAN FROM " + esquemaOrion + ".T_PLAN TP, " + esquemaOrion + ".T_PLANS_PRODUCTS TPP " +
                 "        WHERE TP.ID_PLAN = TPP.ID_PLAN  AND TPP.ID_TPRODUCT = ? ";
 
-        String query3 = " SELECT TP.ID_PLAN, TP.NAME_PLAN FROM T_PLAN TP, T_PLANS_PRODUCTS TPP " +
+        String query3 = " SELECT TP.ID_PLAN, TP.NAME_PLAN FROM " + esquemaOrion + ".T_PLAN TP, " + esquemaOrion + ".T_PLANS_PRODUCTS TPP " +
                 "        WHERE TP.ID_PLAN = TPP.ID_PLAN  AND TPP.ID_TPRODUCT = ? ";
 
-        String query4 = " SELECT TP.ID_PLAN, TP.NAME_PLAN FROM T_PLAN TP, T_PLANS_PRODUCTS TPP " +
+        String query4 = " SELECT TP.ID_PLAN, TP.NAME_PLAN FROM " + esquemaOrion + ".T_PLAN TP, " + esquemaOrion + ".T_PLANS_PRODUCTS TPP " +
                 "        WHERE TP.ID_PLAN = TPP.ID_PLAN  AND TPP.ID_TPRODUCT = ? ";
 
         ConnectionHandler connectionHandler = new ConnectionHandler();
         Connection conexion = connectionHandler.getConnection(remoteJndiOrion);
-
         PreparedStatement sentencia = null;
+
         try {
-            switch (pais){
+            switch (pais) {
                 case "SV":
                     sentencia = conexion.prepareStatement(query1);
                     break;
@@ -90,12 +91,12 @@ public class ListarPlanesPorProducto {
             }
 
             conexion.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return message.genericMessage("ERROR", "600",
                     "Error general contacte al administrador del sistema...", namespace, operationResponse);
         }
-        if(listadoPlanes.size() >0) {
+        if (listadoPlanes.size() > 0) {
             for (int i = 0; i < listadoPlanes.size(); i++) {
                 cursor.beginElement(new QName(namespace, "sucursales"));
                 cursor.insertElementWithText(new QName(namespace, "codigoSucursal"), listadoPlanes.get(i).getCodigoPlan());
@@ -111,11 +112,11 @@ public class ListarPlanesPorProducto {
             }
 
             cursor.toParent();
-            log.info("response = [" + result + "]");
+            //log.info("response = [" + result + "]");
             return result;
-        }else{
+        } else {
             return message.genericMessage("ERROR", "400",
-                    "No se encontraron planes disponibles con el producto "+codigoProducto, namespace, operationResponse);
+                    "No se encontraron planes disponibles con el producto " + codigoProducto, namespace, operationResponse);
 
         }
     }

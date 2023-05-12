@@ -1,4 +1,4 @@
-package com.siman.credisiman.visa.dto.crm;
+package com.siman.credisiman.visa.dto.productos;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -11,11 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AccountState {
-    @JsonProperty("estadoCuenta")
-    @JsonAlias("estadoCuenta")
-    public String estadoCuenta;
-    @JsonProperty("correo")
-    @JsonAlias("correo")
-    public String correo;
+public class Producto {
+    @JsonProperty("codigoProducto")
+    @JsonAlias("codigoProducto")
+    private String codigoProducto;
+
+    @JsonProperty("descripcion")
+    @JsonAlias("descripcion")
+    private String descripcion;
 }

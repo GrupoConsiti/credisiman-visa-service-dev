@@ -1,7 +1,6 @@
 package com.siman.credisiman.visa.service;
 
-
-import com.siman.credisiman.visa.dto.sucursales.Sucursal;
+import com.siman.credisiman.visa.dto.productos.Producto;
 import com.siman.credisiman.visa.utils.ConnectionHandler;
 import com.siman.credisiman.visa.utils.Message;
 import com.siman.credisiman.visa.utils.Utils;
@@ -17,19 +16,19 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListadoSucursales {
-    //private static Logger log = LoggerFactory.getLogger(ListadoSucursales.class);
-    private static final String namespace = "http://siman.com/ListadoSucursales";
-    private static final String operationResponse = "ObtenerListadoSucursalesResponse";
+public class ListadoProductos {
+    //private static final Logger log = LoggerFactory.getLogger(ListadoProductos.class);
+    private static final String namespace = "http://siman.com/ListadoProductos";
+    private static final String operationResponse = "ObtenerListadoProductosResponse";
 
-    public static XmlObject obtenerListadoSucursales(String pais, String remoteJndiSunnel, String remoteJndiOrion,
-                                                     String siscardUrl, String siscardUser, String binCredisiman,
-                                                     String esquemaSunnel, String esquemaOrion, String esquemaEstcta) {
+    public static XmlObject obtenerListadoProductos(String pais, String remoteJndiSunnel, String remoteJndiOrion,
+                                                    String siscardUrl, String siscardUser, String binCredisiman,
+                                                    String esquemaSunnel, String esquemaOrion, String esquemaEstcta) {
 
         //validar campos requeridos
         Utils utils = new Utils();
         Message message = new Message();
-        List<Sucursal> listadoSucursal = new ArrayList<>();
+        List<Producto> listadoProductos = new ArrayList<>();
 
         if (utils.validateNotNull(pais) || utils.validateNotEmpty(pais)) {
             //log.info("pais required");
@@ -45,13 +44,13 @@ public class ListadoSucursales {
         cursor.insertElementWithText(new QName(namespace, "status"), "SUCCESS");
         cursor.insertElementWithText(new QName(namespace, "statusMessage"), "Proceso exitoso");
 
-        String query1 = "SELECT BRANCHOFFICEID, DESCRIPTION FROM " + esquemaOrion + ".T_CBRANCHOFFICES ";
+        String query1 = "SELECT TPRODUCTID, DESCRIPTION FROM " + esquemaOrion + ".T_CTPRODUCT WHERE STATE = 1";
 
-        String query2 = "SELECT BRANCHOFFICEID, DESCRIPTION FROM " + esquemaOrion + ".T_CBRANCHOFFICES ";
+        String query2 = "SELECT TPRODUCTID, DESCRIPTION FROM " + esquemaOrion + ".T_CTPRODUCT WHERE STATE = 1";
 
-        String query3 = "SELECT BRANCHOFFICEID, DESCRIPTION FROM " + esquemaOrion + ".T_CBRANCHOFFICES ";
+        String query3 = "SELECT TPRODUCTID, DESCRIPTION FROM " + esquemaOrion + ".T_CTPRODUCT WHERE STATE = 1";
 
-        String query4 = "SELECT BRANCHOFFICEID, DESCRIPTION FROM " + esquemaOrion + ".T_CBRANCHOFFICES ";
+        String query4 = "SELECT TPRODUCTID, DESCRIPTION FROM " + esquemaOrion + ".T_CTPRODUCT WHERE STATE = 1";
 
         ConnectionHandler connectionHandler = new ConnectionHandler();
         Connection conexion = connectionHandler.getConnection(remoteJndiOrion);
@@ -73,28 +72,28 @@ public class ListadoSucursales {
                     break;
                 default:
                     return message.genericMessage("ERROR", "400",
-                            "El pais ingresado no coincide.", namespace, operationResponse);
+                            "El país ingresado no coincide.", namespace, operationResponse);
             }
+
             ResultSet rs = sentencia.executeQuery();
-
             while (rs.next()) {
-                Sucursal sucursal = new Sucursal();
-                sucursal.setCodigoSucursal(rs.getString("BRANCHOFFICEID"));
-                sucursal.setNombre(rs.getString("DESCRIPTION"));
-                listadoSucursal.add(sucursal);
+                Producto producto = new Producto();
+                producto.setCodigoProducto(rs.getString("TPRODUCTID"));
+                producto.setDescripcion(rs.getString("DESCRIPTION"));
+                listadoProductos.add(producto);
             }
-
             conexion.close();
         } catch (Exception e) {
             e.printStackTrace();
             return message.genericMessage("ERROR", "600",
                     "Error general contacte al administrador del sistema...", namespace, operationResponse);
         }
-        if (listadoSucursal.size() > 0) {
-            for (int i = 0; i < listadoSucursal.size(); i++) {
-                cursor.beginElement(new QName(namespace, "sucursales"));
-                cursor.insertElementWithText(new QName(namespace, "codigoSucursal"), listadoSucursal.get(i).getCodigoSucursal());
-                cursor.insertElementWithText(new QName(namespace, "nombre"), listadoSucursal.get(i).getNombre());
+        if (listadoProductos.size() > 0) {
+            //log.info("PRODUCTOS ENCONTRADOS: " + listadoProductos.size());
+            for (int i = 0; i < listadoProductos.size(); i++) {
+                cursor.beginElement(new QName(namespace, "productos"));
+                cursor.insertElementWithText(new QName(namespace, "codigoProducto"), listadoProductos.get(i).getCodigoProducto());
+                cursor.insertElementWithText(new QName(namespace, "descripcion"), listadoProductos.get(i).getDescripcion());
                 cursor.toParent();
             }
 
@@ -103,7 +102,7 @@ public class ListadoSucursales {
             return result;
         } else {
             return message.genericMessage("ERROR", "400",
-                    "No se encontraron sucursales disponibles", namespace, operationResponse);
+                    "No se encontraron productos disponibles", namespace, operationResponse);
 
         }
     }

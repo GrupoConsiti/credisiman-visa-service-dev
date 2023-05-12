@@ -9,18 +9,17 @@ import com.siman.credisiman.visa.utils.Utils;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.QName;
 
 public class ConsultaSaldoMonedero {
-    private static final Logger log = LoggerFactory.getLogger(ConsultaSaldoMonedero.class);
+    //private static Logger log = LoggerFactory.getLogger(ConsultaSaldoMonedero.class);
 
     public static XmlObject obtenerConsultaSaldoMonedero(String pais, String numeroTarjeta, String cuenta,
-                                                         String fechaCorte, String tipoTarjeta, String codigoEmisor,
-                                                         String remoteJndiSunnel, String remoteJndiOrion, String siscardUrl,
-                                                         String siscardUser, String binCredisiman) {
+                                                         String fechaCorte, String remoteJndiSunnel, String remoteJndiOrion, String siscardUrl, String siscardUser,
+                                                         String binCredisiman, String codigoEmisor, String tipoTarjeta) {
 
         String namespace = "http://siman.com/ConsultaSaldoMonedero";
         String operationResponse = "ObtenerConsultaSaldoMonederoResponse";
@@ -35,30 +34,30 @@ public class ConsultaSaldoMonedero {
 
         //validar campos requeridos
         if (utils.validateNotNull(pais) || utils.validateNotEmpty(pais)) {
-            return message.genericMessage("ERROR", "025", "El campo pais es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo pais es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(numeroTarjeta) || utils.validateNotEmpty(numeroTarjeta)) {
-            return message.genericMessage("ERROR", "025", "El campo número tarjeta es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo número tarjeta es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(cuenta) || utils.validateNotEmpty(cuenta)) {
-            return message.genericMessage("ERROR", "025", "El campo cuenta es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo cuenta es obligatorio", namespace, operationResponse);
         }
         if (utils.validateNotNull(fechaCorte) || utils.validateNotEmpty(fechaCorte)) {
-            return message.genericMessage("ERROR", "025", "El campo fecha corte es obligatorio", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "El campo fecha corte es obligatorio", namespace, operationResponse);
         }
 
         //validar longitudes
         if (!utils.validateLongitude(pais, 3)) {
-            return message.genericMessage("ERROR", "025", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "La longitud del campo pais debe ser menor o igual a 3", namespace, operationResponse);
         }
         if (!utils.validateLongitude(numeroTarjeta, 16)) {
-            return message.genericMessage("ERROR", "025", "La longitud del campo número tarjeta debe ser menor o igual a 16", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "La longitud del campo número tarjeta debe ser menor o igual a 16", namespace, operationResponse);
         }
-        if (!utils.validateLongitude(cuenta, 5)) {
-            return message.genericMessage("ERROR", "025", "La longitud del campo cuenta debe ser menor o igual a 5", namespace, operationResponse);
+        if (!utils.validateLongitude(cuenta, 20)) {
+            return message.genericMessage("ERROR", "400", "La longitud del campo cuenta debe ser menor o igual a 20", namespace, operationResponse);
         }
         if (!utils.validateLongitude(fechaCorte, 8)) {
-            return message.genericMessage("ERROR", "025", "La longitud del campo número tarjeta debe ser menor o igual a 8", namespace, operationResponse);
+            return message.genericMessage("ERROR", "400", "La longitud del campo número tarjeta debe ser menor o igual a 8", namespace, operationResponse);
         }
 
         //OBTENER DATOS TARJETA CREDISIMAN
@@ -84,7 +83,7 @@ public class ConsultaSaldoMonedero {
                     .readValue(response.toString(), ConsultaSaldoMonederoResponse.class);
         } catch (Exception e) {
             e.printStackTrace();
-            log.info(e.getMessage());
+            //log.info(e.getMessage());
             return message.genericMessage("ERROR", "600", "Error general contacte al administrador del sistema...", namespace, operationResponse);
 
         }
@@ -100,11 +99,10 @@ public class ConsultaSaldoMonedero {
             cursor.insertElementWithText(new QName(namespace, "puntosCanjeados"), response1.getPuntosCanjeados());
             cursor.insertElementWithText(new QName(namespace, "saldoFinal"), response1.getSaldoFinal());
             cursor.toParent();
-            log.info("obtenerConsultaSaldoMonedero response = [" + result + "]");
+            //log.info("obtenerConsultaSaldoMonedero response = [" + result + "]");
             return result;
         }
-        log.info("obtenerConsultaSaldoMonedero response = [" + message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse) + "]");
+        //log.info("obtenerConsultaSaldoMonedero response = [" + message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse) + "]");
         return message.genericMessage("ERROR", "400", "La consulta no devolvio resultados", namespace, operationResponse);
-
     }
 }
